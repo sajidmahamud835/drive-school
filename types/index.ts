@@ -62,6 +62,13 @@ export interface User {
   bloodGroup?: string;
   occupation?: string;
   education?: string;
+  facebook?: string;
+  instagram?: string;
+  twitter?: string;
+  linkedin?: string;
+  certificateId?: string;
+  certificateLink?: string;
+  completionDate?: Date;
   createdAt?: Date;
   updatedAt?: Date;
 }
