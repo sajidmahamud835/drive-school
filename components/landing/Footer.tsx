@@ -56,6 +56,17 @@ export default function Footer() {
                 <span className="text-tinder text-2xl">🕐</span>
                 <span className="font-medium">সোম-বৃহ: সকাল ৭টা - ১২টা</span>
               </li>
+              <li className="flex items-start gap-3">
+                <span className="text-tinder text-2xl">📘</span>
+                <a 
+                  href={config.trainingCenter.facebookUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="hover:text-white transition-colors font-medium"
+                >
+                  Facebook পেজ
+                </a>
+              </li>
             </ul>
           </div>
         </div>

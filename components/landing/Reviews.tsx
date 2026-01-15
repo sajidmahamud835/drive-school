@@ -32,7 +32,7 @@ export default function Reviews() {
           </div>
           
           <a
-            href="https://maps.google.com"
+            href="https://www.google.com/maps/place/থ্রি+স্টার+ড্রাইভিং+ট্রেনিং+সেন্টার/@22.6888278,90.3648536,17z/data=!3m1!4b1!4m6!3m5!1s0x37553592540275d5:0x8ff9f400f2f49933!8m2!3d22.6888278!4d90.3670285!16s%2Fg%2F11v0q8vq1h?entry=ttu"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-3 px-8 py-4 bg-tinder text-white font-bold text-lg rounded-full hover:bg-red-600 transition-colors shadow-tinder transform hover:scale-105"

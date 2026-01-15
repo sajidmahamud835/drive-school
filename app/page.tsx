@@ -3,6 +3,7 @@ import Packages from '@/components/landing/Packages';
 import Testimonials from '@/components/landing/Testimonials';
 import Videos from '@/components/landing/Videos';
 import Reviews from '@/components/landing/Reviews';
+import GoogleMapsEmbed from '@/components/landing/GoogleMapsEmbed';
 import Footer from '@/components/landing/Footer';
 
 export default function Home() {
@@ -15,6 +16,7 @@ export default function Home() {
       <Testimonials />
       <Videos />
       <Reviews />
+      <GoogleMapsEmbed />
       <Footer />
     </main>
   );
