@@ -17,6 +17,11 @@ export interface Booking {
   status: 'pending' | 'confirmed' | 'rejected';
   phone: string;
   email?: string;
+  name: string;
+  age: number;
+  whyLearning: string;
+  address: string;
+  previousTraining: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -30,5 +35,7 @@ export interface User {
   firebaseUid: string;
   email: string;
   phone: string;
-  name?: string;
+  name: string;
+  age?: number;
+  address?: string;
 }

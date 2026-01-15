@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { format, addDays, isFriday, startOfDay } from 'date-fns';
-import Button from '../ui/Button';
+import { format, addDays, isFriday } from 'date-fns';
 import { TimeSlot } from '@/types';
 
 interface TimeSlotPickerProps {
@@ -12,6 +11,9 @@ interface TimeSlotPickerProps {
   onTimeSelect: (time: string) => void;
   availableSlots?: TimeSlot[];
 }
+
+const dayNames = ['রবি', 'সোম', 'মঙ্গল', 'বুধ', 'বৃহ', 'শনি', 'রবি'];
+const monthNames = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
 
 export default function TimeSlotPicker({
   selectedDate,
@@ -23,7 +25,6 @@ export default function TimeSlotPicker({
   const [dates, setDates] = useState<Date[]>([]);
 
   useEffect(() => {
-    // Generate next 30 days, excluding Fridays
     const dateList: Date[] = [];
     let currentDate = new Date();
     let count = 0;
@@ -38,7 +39,6 @@ export default function TimeSlotPicker({
     setDates(dateList);
   }, []);
 
-  // Generate time slots from 7:00 AM to 11:59 AM (30-minute intervals)
   const generateTimeSlots = (): string[] => {
     const slots: string[] = [];
     for (let hour = 7; hour < 12; hour++) {
@@ -56,29 +56,38 @@ export default function TimeSlotPicker({
     return slot ? slot.available : true;
   };
 
+  const formatDateBangla = (date: Date) => {
+    const day = dayNames[date.getDay()];
+    const month = monthNames[date.getMonth()];
+    return { day, month, date: date.getDate() };
+  };
+
   return (
-    <div className="max-w-4xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6">Select Date & Time</h2>
+    <div className="max-w-5xl mx-auto">
+      <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center text-gray-900">
+        তারিখ ও সময় নির্বাচন করুন
+      </h2>
       
       {/* Date Selection */}
-      <div className="mb-8">
-        <h3 className="text-lg font-semibold mb-4">Select Date</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3">
+      <div className="mb-10">
+        <h3 className="text-xl font-bold mb-6 text-gray-800">তারিখ নির্বাচন করুন</h3>
+        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-4">
           {dates.map((date) => {
             const isSelected = selectedDate && format(date, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd');
+            const { day, month, date: dayNum } = formatDateBangla(date);
             return (
               <button
                 key={date.toISOString()}
                 onClick={() => onDateSelect(date)}
-                className={`p-3 rounded-lg border-2 transition-all ${
+                className={`p-4 rounded-xl border-2 transition-all font-medium ${
                   isSelected
-                    ? 'border-blue-600 bg-blue-50 text-blue-700'
-                    : 'border-gray-300 hover:border-blue-400 text-gray-700'
+                    ? 'border-tinder bg-tinder/10 text-tinder shadow-tinder'
+                    : 'border-gray-300 hover:border-tinder text-gray-700 hover:bg-pink-50'
                 }`}
               >
-                <div className="text-sm font-medium">{format(date, 'EEE')}</div>
-                <div className="text-lg font-bold">{format(date, 'd')}</div>
-                <div className="text-xs text-gray-500">{format(date, 'MMM')}</div>
+                <div className="text-base font-bold mb-1">{day}</div>
+                <div className="text-2xl font-bold mb-1">{dayNum}</div>
+                <div className="text-xs text-gray-600">{month}</div>
               </button>
             );
           })}
@@ -88,8 +97,10 @@ export default function TimeSlotPicker({
       {/* Time Selection */}
       {selectedDate && (
         <div>
-          <h3 className="text-lg font-semibold mb-4">Select Time (7:00 AM - 11:59 AM)</h3>
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+          <h3 className="text-xl font-bold mb-6 text-gray-800">
+            সময় নির্বাচন করুন (সকাল ৭টা - ১১টা ৫৯ মিনিট)
+          </h3>
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4">
             {timeSlots.map((time) => {
               const available = isSlotAvailable(time);
               const isSelected = selectedTime === time;
@@ -98,12 +109,12 @@ export default function TimeSlotPicker({
                   key={time}
                   onClick={() => available && onTimeSelect(time)}
                   disabled={!available}
-                  className={`p-3 rounded-lg border-2 transition-all ${
+                  className={`p-4 rounded-xl border-2 transition-all font-bold text-lg ${
                     !available
                       ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
                       : isSelected
-                      ? 'border-blue-600 bg-blue-50 text-blue-700'
-                      : 'border-gray-300 hover:border-blue-400 text-gray-700'
+                      ? 'border-tinder bg-tinder text-white shadow-tinder'
+                      : 'border-gray-300 hover:border-tinder text-gray-700 hover:bg-pink-50'
                   }`}
                 >
                   {time}

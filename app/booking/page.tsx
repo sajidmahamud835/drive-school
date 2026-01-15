@@ -66,7 +66,16 @@ function BookingPageContent() {
   );
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
-  const [userInfo, setUserInfo] = useState<{ email: string; phone: string } | null>(null);
+  const [userInfo, setUserInfo] = useState<{
+    email: string;
+    phone: string;
+    name: string;
+    age: number;
+    whyLearning: string;
+    address: string;
+    previousTraining: boolean;
+    password?: string;
+  } | null>(null);
   const [booking, setBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -80,14 +89,24 @@ function BookingPageContent() {
     }
   };
 
-  const handleAuthSubmit = async (data: { email: string; phone: string; password?: string }) => {
-    setUserInfo({ email: data.email, phone: data.phone });
+  const handleAuthSubmit = async (data: {
+    email: string;
+    phone: string;
+    name: string;
+    age: number;
+    whyLearning: string;
+    address: string;
+    previousTraining: boolean;
+    password?: string;
+  }) => {
+    setUserInfo(data);
     setStep('time');
     // TODO: Implement Firebase Auth in Phase 2
   };
 
   const handleGoogleAuth = async () => {
     // TODO: Implement Google OAuth in Phase 2
+    // This will need to collect additional info after Google auth
     setStep('time');
   };
 
@@ -103,6 +122,11 @@ function BookingPageContent() {
         status: 'pending',
         phone: userInfo.phone,
         email: userInfo.email,
+        name: userInfo.name,
+        age: userInfo.age,
+        whyLearning: userInfo.whyLearning,
+        address: userInfo.address,
+        previousTraining: userInfo.previousTraining,
       };
       setBooking(newBooking);
       setLoading(false);
@@ -137,13 +161,13 @@ function BookingPageContent() {
               onTimeSelect={setSelectedTime}
             />
             {selectedDate && selectedTime && (
-              <div className="mt-8 flex justify-end">
+              <div className="mt-10 flex justify-center">
                 <button
                   onClick={handleTimeSelect}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                  className="px-12 py-5 bg-tinder hover:bg-red-600 text-white rounded-xl hover:shadow-tinder transition-all font-bold text-lg transform hover:scale-105 active:scale-95"
                   disabled={loading}
                 >
-                  {loading ? 'Creating Booking...' : 'Confirm Booking'}
+                  {loading ? 'বুকিং তৈরি হচ্ছে...' : '🚗 বুকিং নিশ্চিত করুন'}
                 </button>
               </div>
             )}

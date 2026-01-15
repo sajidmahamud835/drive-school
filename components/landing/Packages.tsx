@@ -1,90 +1,153 @@
 'use client';
 
+import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';
 import Button from '../ui/Button';
 import { Package } from '@/types';
 import Link from 'next/link';
+import { config } from '@/lib/config';
 
 const packages: Package[] = [
   {
     id: '15-days',
-    name: '15 Days Package',
+    name: '১৫ দিনের প্যাকেজ',
     duration: '15 days',
-    price: 0, // Placeholder
-    description: 'Perfect for quick learners who want to get on the road fast',
+    price: 0,
+    description: 'দ্রুত শেখার জন্য পারফেক্ট',
     features: [
-      '15 days of intensive training',
-      'Flexible scheduling',
-      'Road test preparation',
-      'Certificate of completion',
+      '১৫ দিনের ইন্টেনসিভ ট্রেনিং',
+      'লক্ষ্য অনুযায়ী সিডিউল',
+      'রোড টেস্ট প্রস্তুতি',
+      'সার্টিফিকেট অফ কমপ্লিশন',
     ],
     isActive: true,
   },
   {
     id: '1-month',
-    name: '1 Month Package',
+    name: 'এক মাসের প্যাকেজ',
     duration: '1 month',
-    price: 0, // Placeholder
-    description: 'Comprehensive training program for confident driving',
+    price: 0,
+    description: 'ব্যাপক প্রশিক্ষণ প্রোগ্রাম',
     features: [
-      '30 days of structured training',
-      'Theory and practical lessons',
-      'Highway driving experience',
-      'Parking techniques',
-      'Road test preparation',
+      '৩০ দিনের স্ট্রাকচার্ড ট্রেনিং',
+      'থিওরি ও প্র্যাকটিক্যাল লেসন',
+      'হাইওয়ে ড্রাইভিং এক্সপেরিয়েন্স',
+      'পার্কিং টেকনিক',
+      'রোড টেস্ট প্রস্তুতি',
     ],
     isActive: true,
   },
   {
     id: 'pay-as-you-go',
-    name: 'Pay As You Go',
+    name: 'পে অ্যাজ ইউ গো',
     duration: 'Flexible',
-    price: 0, // Placeholder
-    description: 'For students who want to practice after completing their course',
+    price: 0,
+    description: 'অতিরিক্ত অনুশীলনের জন্য',
     features: [
-      'Flexible scheduling',
-      'Pay per session',
-      'Practice specific skills',
-      'No long-term commitment',
+      'লক্ষ্য অনুযায়ী সিডিউল',
+      'সেশন প্রতি পেমেন্ট',
+      'নির্দিষ্ট স্কিল প্র্যাকটিস',
+      'দীর্ঘমেয়াদী কমিটমেন্ট নেই',
     ],
     isActive: true,
   },
 ];
 
 export default function Packages() {
+  const [hoveredPackage, setHoveredPackage] = useState<string | null>(null);
+
   return (
-    <section className="py-20 bg-gray-50">
+    <section className="py-20 bg-gradient-to-b from-white to-gray-50">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Choose Your Package</h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Select the training package that best fits your schedule and learning goals
+        <div className="text-center mb-16">
+          <div className="inline-block px-6 py-3 bg-tinder/10 rounded-full mb-6 border-2 border-tinder/20">
+            <span className="text-tinder font-bold text-lg">📦 প্যাকেজসমূহ</span>
+          </div>
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-gray-900 leading-tight">
+            <span className="block">আপনার জন্য</span>
+            <span className="block text-tinder">সঠিক প্যাকেজ বাছুন</span>
+          </h2>
+          <p className="text-xl md:text-2xl text-gray-700 max-w-3xl mx-auto font-medium leading-relaxed">
+            আপনার লক্ষ্য ও সময়সূচির সাথে মানানসই প্যাকেজ নির্বাচন করুন
           </p>
         </div>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {packages.map((pkg) => (
-            <Card key={pkg.id} className="flex flex-col hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <CardTitle>{pkg.name}</CardTitle>
-                <p className="text-gray-600 mt-2">{pkg.description}</p>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <ul className="space-y-2 mb-6">
-                  {pkg.features.map((feature, index) => (
-                    <li key={index} className="flex items-start">
-                      <span className="text-green-500 mr-2">✓</span>
-                      <span className="text-gray-700">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Link href={`/booking?package=${pkg.id}`} className="block">
-                  <Button variant="primary" className="w-full">
-                    Select Package
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          ))}
+          {packages.map((pkg, index) => {
+            const isHovered = hoveredPackage === pkg.id;
+            const isPopular = pkg.id === '1-month';
+            
+            return (
+              <div
+                key={pkg.id}
+                className="relative transform transition-all duration-300 hover:scale-105"
+                onMouseEnter={() => setHoveredPackage(pkg.id)}
+                onMouseLeave={() => setHoveredPackage(null)}
+              >
+                {isPopular && (
+                  <div className="absolute -top-5 left-1/2 transform -translate-x-1/2 z-10">
+                    <span className="px-6 py-2 bg-tinder text-white text-base font-bold rounded-full shadow-tinder animate-pulse border-2 border-white">
+                      ⭐ সর্বাধিক জনপ্রিয়
+                    </span>
+                  </div>
+                )}
+                
+                <Card 
+                  className={`h-full flex flex-col transition-all duration-300 bg-white ${
+                    isHovered 
+                      ? 'shadow-tinder border-3 border-tinder' 
+                      : 'border-2 border-gray-200 hover:border-tinder'
+                  } ${isPopular ? 'ring-4 ring-tinder/20 shadow-2xl' : ''}`}
+                >
+                  <CardHeader className="text-center pb-6 pt-8">
+                    <div className={`w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center ${
+                      isPopular ? 'bg-tinder text-white' : 'bg-gray-100 text-gray-700'
+                    } text-4xl font-bold transition-all duration-300 ${isHovered ? 'scale-110 rotate-12' : ''}`}>
+                      {pkg.id === '15-days' ? '⚡' : pkg.id === '1-month' ? '🎯' : '🔄'}
+                    </div>
+                    <CardTitle className="text-2xl md:text-3xl mb-3 text-gray-900 font-bold">{pkg.name}</CardTitle>
+                    <p className="text-gray-700 text-base font-medium">{pkg.description}</p>
+                  </CardHeader>
+                  
+                  <CardContent className="flex-grow flex flex-col px-8">
+                    <ul className="space-y-4 mb-8 flex-grow">
+                      {pkg.features.map((feature, featureIndex) => (
+                        <li key={featureIndex} className="flex items-start text-base">
+                          <span className={`mr-3 text-xl ${isPopular ? 'text-tinder' : 'text-green-600'} font-bold`}>
+                            ✓
+                          </span>
+                          <span className="text-gray-800 leading-relaxed font-medium">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    
+                    <Link href={`/booking?package=${pkg.id}`} className="block">
+                      <Button
+                        variant={isPopular ? 'primary' : 'outline'}
+                        className={`w-full font-bold py-5 rounded-xl text-lg transition-all ${
+                          isPopular 
+                            ? 'bg-tinder hover:bg-red-600 text-white shadow-tinder' 
+                            : 'border-3 border-tinder text-tinder hover:bg-pink-50'
+                        }`}
+                      >
+                        {isHovered ? '🚗 এখনই বুক করুন' : 'প্যাকেজ নির্বাচন করুন'}
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* CTA Section */}
+        <div className="mt-20 text-center">
+          <div className="inline-block px-10 py-6 bg-gradient-to-r from-tinder to-red-500 rounded-full shadow-tinder transform hover:scale-105 transition-transform border-2 border-white">
+            <p className="text-white font-bold text-xl">
+              📞 সরাসরি কল করুন: <a href={`tel:${config.trainingCenter.phone}`} className="underline hover:text-gray-100 decoration-2">{config.trainingCenter.phone}</a>
+            </p>
+            <p className="text-white/90 text-base mt-1">বিনামূল্যে পরামর্শ পান</p>
+          </div>
         </div>
       </div>
     </section>
