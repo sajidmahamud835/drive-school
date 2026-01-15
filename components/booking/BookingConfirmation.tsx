@@ -14,7 +14,7 @@ interface BookingConfirmationProps {
   packageInfo: Package | null;
 }
 
-export default function BookingConfirmation({ booking, packageInfo }: BookingConfirmationProps) {
+export default function BookingConfirmation({ booking, packageInfo, studentId }: BookingConfirmationProps) {
   const bookingDate = booking.selectedDate ? new Date(booking.selectedDate) : null;
 
   const formatDateBangla = (date: Date) => {
@@ -94,9 +94,11 @@ export default function BookingConfirmation({ booking, packageInfo }: BookingCon
             হোমে ফিরে যান
           </Button>
         </Link>
-        <Button variant="primary" size="lg" className="w-full sm:w-auto bg-tinder hover:bg-red-600 text-white font-bold py-4 text-lg shadow-tinder">
-          আমার বুকিং দেখুন
-        </Button>
+        <Link href="/dashboard" className="w-full sm:w-auto">
+          <Button variant="primary" size="lg" className="w-full sm:w-auto bg-tinder hover:bg-red-600 text-white font-bold py-4 text-lg shadow-tinder">
+            আমার ড্যাশবোর্ড
+          </Button>
+        </Link>
       </div>
     </div>
   );

@@ -20,7 +20,6 @@ A Next.js-based landing page and booking system for a driving training center.
 - Firebase Auth
 - MongoDB
 - Nodemailer
-- Google Calendar API
 
 ## Getting Started
 
@@ -35,4 +34,18 @@ See `.env.local.example` for required variables.
 
 ## Deployment
 
-Deployed on Vercel. See deployment checklist in plan.
+### Deploy to Vercel
+
+1. **Quick Deploy**: See `deploy-vercel.md` for step-by-step instructions
+2. **Detailed Guide**: See `DEPLOYMENT.md` for comprehensive deployment guide
+
+### Quick Steps:
+1. Push code to GitHub
+2. Import project in Vercel dashboard
+3. Add all environment variables (see `deploy-vercel.md`)
+4. Deploy!
+
+The app is configured to:
+- Use JSON file for Firebase Admin in development
+- Use environment variables for Firebase Admin in production (Vercel)
+- Automatically detect Vercel environment

@@ -23,6 +23,18 @@ export interface Booking {
   whyLearning: string;
   address: string;
   previousTraining: boolean;
+  // Admin fields
+  assignedPackage?: '15-days' | '1-month' | 'old-student';
+  fee?: number;
+  totalPaid?: number;
+  due?: number;
+  payments?: Array<{
+    amount: number;
+    date: Date;
+    method: 'cash' | 'bank' | 'other';
+    notes?: string;
+  }>;
+  invoiceNumber?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -33,10 +45,23 @@ export interface TimeSlot {
 }
 
 export interface User {
+  id?: string;
   firebaseUid: string;
+  studentId?: string;
   email: string;
   phone: string;
   name: string;
   age?: number;
+  gender: 'male' | 'female' | 'other';
   address?: string;
+  status?: 'pending' | 'approved' | 'completed';
+  dateOfBirth?: Date;
+  nid?: string;
+  emergencyContact?: string;
+  emergencyPhone?: string;
+  bloodGroup?: string;
+  occupation?: string;
+  education?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }

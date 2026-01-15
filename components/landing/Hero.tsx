@@ -88,6 +88,16 @@ export default function Hero() {
             </a>
           </div>
 
+          {/* Login Link */}
+          <div className="text-center mb-8">
+            <Link
+              href="/login"
+              className="text-lg text-gray-700 hover:text-tinder font-semibold transition-colors"
+            >
+              ইতিমধ্যে অ্যাকাউন্ট আছে? <span className="text-tinder underline">লগইন করুন</span>
+            </Link>
+          </div>
+
           {/* Trust Indicators - Clear and readable */}
           <div className="flex flex-wrap justify-center gap-8 md:gap-16 bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-lg border-2 border-gray-100 max-w-4xl mx-auto">
             <div className="flex flex-col items-center">

@@ -12,6 +12,7 @@ interface BookingListProps {
   bookings: Booking[];
   onConfirm: (bookingId: string) => void;
   onReject: (bookingId: string) => void;
+  onBookingClick?: (booking: Booking) => void;
   loading?: boolean;
 }
 
@@ -30,7 +31,7 @@ const getStatusBadge = (status: string) => {
   return statusMap[status] || statusMap.pending;
 };
 
-export default function BookingList({ bookings, onConfirm, onReject, loading = false }: BookingListProps) {
+export default function BookingList({ bookings, onConfirm, onReject, onBookingClick, loading = false }: BookingListProps) {
   if (bookings.length === 0) {
     return (
       <div className="text-center py-16 bg-white rounded-2xl border-2 border-gray-200">
@@ -48,7 +49,11 @@ export default function BookingList({ bookings, onConfirm, onReject, loading = f
         const statusBadge = getStatusBadge(booking.status);
         
         return (
-          <Card key={booking.id} className="border-2 border-gray-200 hover:border-tinder transition-all shadow-lg">
+          <Card 
+            key={booking.id} 
+            className="border-2 border-gray-200 hover:border-tinder transition-all shadow-lg cursor-pointer"
+            onClick={() => onBookingClick && onBookingClick(booking)}
+          >
             <CardContent className="p-8">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                 <div className="flex-1">
