@@ -6,14 +6,25 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Button from '../ui/Button';
 
+const whyLearningOptions = [
+  { value: 'going-abroad', label: 'বিদেশে যাওয়া' },
+  { value: 'interest-hobby', label: 'আগ্রহ/শখ' },
+  { value: 'work-career', label: 'কাজ/ক্যারিয়ার' },
+  { value: 'others', label: 'অন্যান্য' },
+] as const;
+
 const bookingSchema = z.object({
   name: z.string().min(2, 'নাম কমপক্ষে ২ অক্ষর হতে হবে'),
   age: z.number().min(16, 'বয়স কমপক্ষে ১৬ বছর হতে হবে').max(100),
   email: z.string().email('সঠিক ইমেইল ঠিকানা দিন'),
   phone: z.string().min(10, 'ফোন নম্বর কমপক্ষে ১০ সংখ্যা হতে হবে'),
-  whyLearning: z.string().min(10, 'কেন শিখতে চান তা জানান'),
+  whyLearning: z.enum(['going-abroad', 'interest-hobby', 'work-career', 'others'], {
+    errorMap: () => ({ message: 'অনুগ্রহ করে একটি অপশন নির্বাচন করুন' }),
+  }),
   address: z.string().min(5, 'সঠিক ঠিকানা দিন'),
-  previousTraining: z.boolean(),
+  previousTraining: z.enum(['yes', 'no'], {
+    errorMap: () => ({ message: 'অনুগ্রহ করে একটি অপশন নির্বাচন করুন' }),
+  }),
   password: z.string().min(6, 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষর হতে হবে').optional(),
 });
 
@@ -36,28 +47,77 @@ export default function BookingForm({ onSubmit, onGoogleAuth, loading = false }:
   } = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
     defaultValues: {
-      previousTraining: false,
+      previousTraining: 'no',
     },
   });
 
   const previousTraining = watch('previousTraining');
 
   const handleAutoFillAddress = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          try {
-            // Placeholder for address auto-fill
-            alert('ঠিকানা স্বয়ংক্রিয়ভাবে পূরণ করার বৈশিষ্ট্যটি শীঘ্রই আসছে');
-          } catch (error) {
-            console.error('Error getting address:', error);
-          }
-        },
-        () => {
-          alert('অনুগ্রহ করে লোকেশন সার্ভিস চালু করুন অথবা নিজে ঠিকানা দিন');
-        }
-      );
+    if (!navigator.geolocation) {
+      alert('আপনার ব্রাউজার লোকেশন সার্ভিস সমর্থন করে না');
+      return;
     }
+
+    const loadingButton = document.querySelector('[data-address-loading]') as HTMLButtonElement;
+    if (loadingButton) {
+      loadingButton.disabled = true;
+      loadingButton.textContent = '📍 লোকেশন পাওয়া হচ্ছে...';
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          
+          // Use reverse geocoding API (using OpenStreetMap Nominatim as free alternative)
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1&accept-language=bn`
+          );
+          
+          if (!response.ok) {
+            throw new Error('Failed to fetch address');
+          }
+          
+          const data = await response.json();
+          
+          if (data && data.display_name) {
+            const address = data.display_name;
+            setValue('address', address);
+            
+            if (loadingButton) {
+              loadingButton.textContent = '✅ ঠিকানা যোগ করা হয়েছে';
+              setTimeout(() => {
+                loadingButton.textContent = '📍 স্বয়ংক্রিয়';
+                loadingButton.disabled = false;
+              }, 2000);
+            }
+          } else {
+            throw new Error('Address not found');
+          }
+        } catch (error) {
+          console.error('Error getting address:', error);
+          alert('ঠিকানা পাওয়া যায়নি। অনুগ্রহ করে নিজে ঠিকানা দিন।');
+          if (loadingButton) {
+            loadingButton.textContent = '📍 স্বয়ংক্রিয়';
+            loadingButton.disabled = false;
+          }
+        }
+      },
+      (error) => {
+        console.error('Geolocation error:', error);
+        alert('অনুগ্রহ করে লোকেশন সার্ভিস চালু করুন অথবা নিজে ঠিকানা দিন');
+        if (loadingButton) {
+          loadingButton.textContent = '📍 স্বয়ংক্রিয়';
+          loadingButton.disabled = false;
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      }
+    );
   };
 
   if (authMethod === 'google') {
@@ -179,7 +239,8 @@ export default function BookingForm({ onSubmit, onGoogleAuth, loading = false }:
             <button
               type="button"
               onClick={handleAutoFillAddress}
-              className="px-6 py-4 bg-gray-100 hover:bg-gray-200 rounded-xl text-base font-bold transition-colors whitespace-nowrap"
+              data-address-loading
+              className="px-6 py-4 bg-tinder hover:bg-red-600 text-white rounded-xl text-base font-bold transition-all whitespace-nowrap shadow-md hover:shadow-lg"
             >
               📍 স্বয়ংক্রিয়
             </button>
@@ -194,29 +255,51 @@ export default function BookingForm({ onSubmit, onGoogleAuth, loading = false }:
           <label htmlFor="whyLearning" className="block text-base font-bold text-gray-800 mb-2">
             কেন শিখতে চান? <span className="text-red-500">*</span>
           </label>
-          <textarea
+          <select
             id="whyLearning"
             {...register('whyLearning')}
-            rows={4}
-            className="w-full px-5 py-4 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-tinder focus:border-transparent transition-all resize-none text-lg"
-            placeholder="আমাদের বলুন কেন আপনি ড্রাইভিং শিখতে চান..."
-          ></textarea>
+            className="w-full px-5 py-4 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-tinder focus:border-transparent transition-all text-lg bg-white"
+          >
+            <option value="">একটি অপশন নির্বাচন করুন</option>
+            {whyLearningOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
           {errors.whyLearning && (
             <p className="mt-2 text-base text-red-600 font-medium">{errors.whyLearning.message}</p>
           )}
         </div>
 
         {/* Previous Training */}
-        <div className="flex items-center gap-4 p-5 bg-gray-50 rounded-xl border-2 border-gray-200">
-          <input
-            id="previousTraining"
-            type="checkbox"
-            {...register('previousTraining')}
-            className="w-6 h-6 text-tinder border-gray-300 rounded focus:ring-tinder cursor-pointer"
-          />
-          <label htmlFor="previousTraining" className="text-base font-bold text-gray-800 cursor-pointer flex-1">
-            আগে ড্রাইভিং প্রশিক্ষণ নিয়েছেন?
+        <div>
+          <label className="block text-base font-bold text-gray-800 mb-3">
+            আগে ড্রাইভিং প্রশিক্ষণ নিয়েছেন? <span className="text-red-500">*</span>
           </label>
+          <div className="flex gap-6">
+            <label className="flex items-center gap-3 cursor-pointer p-4 bg-gray-50 rounded-xl border-2 border-gray-200 hover:border-tinder transition-all flex-1">
+              <input
+                type="radio"
+                value="yes"
+                {...register('previousTraining')}
+                className="w-5 h-5 text-tinder border-gray-300 focus:ring-tinder cursor-pointer"
+              />
+              <span className="text-base font-bold text-gray-800">হ্যাঁ</span>
+            </label>
+            <label className="flex items-center gap-3 cursor-pointer p-4 bg-gray-50 rounded-xl border-2 border-gray-200 hover:border-tinder transition-all flex-1">
+              <input
+                type="radio"
+                value="no"
+                {...register('previousTraining')}
+                className="w-5 h-5 text-tinder border-gray-300 focus:ring-tinder cursor-pointer"
+              />
+              <span className="text-base font-bold text-gray-800">না</span>
+            </label>
+          </div>
+          {errors.previousTraining && (
+            <p className="mt-2 text-base text-red-600 font-medium">{errors.previousTraining.message}</p>
+          )}
         </div>
 
         {/* Password (Optional) */}

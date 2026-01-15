@@ -43,11 +43,13 @@ const packages: Package[] = [
     duration: 'Flexible',
     price: 0,
     description: 'অতিরিক্ত অনুশীলনের জন্য',
+    note: 'শুধুমাত্র সম্পূর্ণ কোর্স সম্পন্নকারী শিক্ষার্থীদের জন্য',
     features: [
       'লক্ষ্য অনুযায়ী সিডিউল',
       'সেশন প্রতি পেমেন্ট',
       'নির্দিষ্ট স্কিল প্র্যাকটিস',
       'দীর্ঘমেয়াদী কমিটমেন্ট নেই',
+      'সম্পূর্ণ কোর্স সম্পন্নকারীদের জন্য',
     ],
     isActive: true,
   },
@@ -85,8 +87,8 @@ export default function Packages() {
                 onMouseLeave={() => setHoveredPackage(null)}
               >
                 {isPopular && (
-                  <div className="absolute -top-5 left-1/2 transform -translate-x-1/2 z-10">
-                    <span className="px-6 py-2 bg-tinder text-white text-base font-bold rounded-full shadow-tinder animate-pulse border-2 border-white">
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-20">
+                    <span className="px-5 py-1.5 bg-tinder text-white text-sm font-bold rounded-full shadow-lg border-2 border-white whitespace-nowrap">
                       ⭐ সর্বাধিক জনপ্রিয়
                     </span>
                   </div>
@@ -97,9 +99,9 @@ export default function Packages() {
                     isHovered 
                       ? 'shadow-tinder border-3 border-tinder' 
                       : 'border-2 border-gray-200 hover:border-tinder'
-                  } ${isPopular ? 'ring-4 ring-tinder/20 shadow-2xl' : ''}`}
+                  } ${isPopular ? 'ring-4 ring-tinder/20 shadow-2xl pt-6' : ''}`}
                 >
-                  <CardHeader className="text-center pb-6 pt-8">
+                  <CardHeader className={`text-center pb-6 ${isPopular ? 'pt-10' : 'pt-8'}`}>
                     <div className={`w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center ${
                       isPopular ? 'bg-tinder text-white' : 'bg-gray-100 text-gray-700'
                     } text-4xl font-bold transition-all duration-300 ${isHovered ? 'scale-110 rotate-12' : ''}`}>
@@ -107,6 +109,13 @@ export default function Packages() {
                     </div>
                     <CardTitle className="text-2xl md:text-3xl mb-3 text-gray-900 font-bold">{pkg.name}</CardTitle>
                     <p className="text-gray-700 text-base font-medium">{pkg.description}</p>
+                    {pkg.id === 'pay-as-you-go' && (
+                      <div className="mt-3 px-4 py-2 bg-yellow-50 border-2 border-yellow-300 rounded-lg">
+                        <p className="text-yellow-800 text-sm font-bold">
+                          ⚠️ শুধুমাত্র সম্পূর্ণ কোর্স সম্পন্নকারী শিক্ষার্থীদের জন্য
+                        </p>
+                      </div>
+                    )}
                   </CardHeader>
                   
                   <CardContent className="flex-grow flex flex-col px-8">

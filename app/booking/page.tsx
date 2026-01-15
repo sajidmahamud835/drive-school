@@ -11,44 +11,46 @@ import { Package, Booking } from '@/types';
 const packages: Package[] = [
   {
     id: '15-days',
-    name: '15 Days Package',
+    name: '১৫ দিনের প্যাকেজ',
     duration: '15 days',
     price: 0,
-    description: 'Perfect for quick learners who want to get on the road fast',
+    description: 'দ্রুত শেখার জন্য পারফেক্ট',
     features: [
-      '15 days of intensive training',
-      'Flexible scheduling',
-      'Road test preparation',
-      'Certificate of completion',
+      '১৫ দিনের ইন্টেনসিভ ট্রেনিং',
+      'লক্ষ্য অনুযায়ী সিডিউল',
+      'রোড টেস্ট প্রস্তুতি',
+      'সার্টিফিকেট অফ কমপ্লিশন',
     ],
     isActive: true,
   },
   {
     id: '1-month',
-    name: '1 Month Package',
+    name: 'এক মাসের প্যাকেজ',
     duration: '1 month',
     price: 0,
-    description: 'Comprehensive training program for confident driving',
+    description: 'ব্যাপক প্রশিক্ষণ প্রোগ্রাম',
     features: [
-      '30 days of structured training',
-      'Theory and practical lessons',
-      'Highway driving experience',
-      'Parking techniques',
-      'Road test preparation',
+      '৩০ দিনের স্ট্রাকচার্ড ট্রেনিং',
+      'থিওরি ও প্র্যাকটিক্যাল লেসন',
+      'হাইওয়ে ড্রাইভিং এক্সপেরিয়েন্স',
+      'পার্কিং টেকনিক',
+      'রোড টেস্ট প্রস্তুতি',
     ],
     isActive: true,
   },
   {
     id: 'pay-as-you-go',
-    name: 'Pay As You Go',
+    name: 'পে অ্যাজ ইউ গো',
     duration: 'Flexible',
     price: 0,
-    description: 'For students who want to practice after completing their course',
+    description: 'অতিরিক্ত অনুশীলনের জন্য',
+    note: 'শুধুমাত্র সম্পূর্ণ কোর্স সম্পন্নকারী শিক্ষার্থীদের জন্য',
     features: [
-      'Flexible scheduling',
-      'Pay per session',
-      'Practice specific skills',
-      'No long-term commitment',
+      'লক্ষ্য অনুযায়ী সিডিউল',
+      'সেশন প্রতি পেমেন্ট',
+      'নির্দিষ্ট স্কিল প্র্যাকটিস',
+      'দীর্ঘমেয়াদী কমিটমেন্ট নেই',
+      'সম্পূর্ণ কোর্স সম্পন্নকারীদের জন্য',
     ],
     isActive: true,
   },
@@ -71,9 +73,9 @@ function BookingPageContent() {
     phone: string;
     name: string;
     age: number;
-    whyLearning: string;
+    whyLearning: 'going-abroad' | 'interest-hobby' | 'work-career' | 'others';
     address: string;
-    previousTraining: boolean;
+    previousTraining: 'yes' | 'no';
     password?: string;
   } | null>(null);
   const [booking, setBooking] = useState<Booking | null>(null);
@@ -94,9 +96,9 @@ function BookingPageContent() {
     phone: string;
     name: string;
     age: number;
-    whyLearning: string;
+    whyLearning: 'going-abroad' | 'interest-hobby' | 'work-career' | 'others';
     address: string;
-    previousTraining: boolean;
+    previousTraining: 'yes' | 'no';
     password?: string;
   }) => {
     setUserInfo(data);
@@ -126,7 +128,7 @@ function BookingPageContent() {
         age: userInfo.age,
         whyLearning: userInfo.whyLearning,
         address: userInfo.address,
-        previousTraining: userInfo.previousTraining,
+        previousTraining: userInfo.previousTraining === 'yes',
       };
       setBooking(newBooking);
       setLoading(false);

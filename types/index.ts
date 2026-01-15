@@ -6,6 +6,7 @@ export interface Package {
   description: string;
   features: string[];
   isActive: boolean;
+  note?: string;
 }
 
 export interface Booking {

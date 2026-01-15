@@ -37,6 +37,13 @@ export default function PackageSelector({
             <CardHeader className="text-center">
               <CardTitle className="text-2xl font-bold text-gray-900 mb-3">{pkg.name}</CardTitle>
               <p className="text-gray-700 text-base font-medium">{pkg.description}</p>
+              {pkg.id === 'pay-as-you-go' && pkg.note && (
+                <div className="mt-3 px-3 py-1.5 bg-yellow-50 border-2 border-yellow-300 rounded-lg">
+                  <p className="text-yellow-800 text-xs font-bold">
+                    ⚠️ {pkg.note}
+                  </p>
+                </div>
+              )}
             </CardHeader>
             <CardContent>
               <ul className="space-y-3 mb-6">
