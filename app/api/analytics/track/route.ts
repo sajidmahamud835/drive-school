@@ -209,6 +209,31 @@ export async function POST(request: NextRequest) {
         // Generate unique event ID for deduplication
         const eventId = `${eventName}_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
 
+        // Prepare TikTok event payload
+        const contents = tiktokParams.content_ids 
+          ? tiktokParams.content_ids.map((id: string) => ({
+              content_id: id,
+              content_type: 'product',
+            }))
+          : tiktokParams.package_id
+          ? [{
+              content_id: tiktokParams.package_id,
+              content_type: 'product',
+            }]
+          : undefined;
+
+        const properties: any = {
+          value: tiktokParams.value || 0,
+          currency: tiktokParams.currency || 'BDT',
+        };
+
+        if (contents) {
+          properties.contents = contents;
+        }
+        if (tiktokParams.content_name) {
+          properties.content_name = tiktokParams.content_name;
+        }
+
         const tiktokPayload = {
           pixel_code: TIKTOK_PIXEL_ID,
           event: tiktokEventName,
@@ -218,28 +243,15 @@ export async function POST(request: NextRequest) {
             page: {
               url: request.headers.get('referer') || 'unknown',
             },
-            user: userData,
+            user: Object.keys(userData).length > 0 ? userData : undefined,
           },
-          properties: {
-            contents: tiktokParams.content_ids ? tiktokParams.content_ids.map((id: string) => ({
-              content_id: id,
-              content_type: 'product',
-            })) : tiktokParams.package_id ? [{
-              content_id: tiktokParams.package_id,
-              content_type: 'product',
-            }] : undefined,
-            value: tiktokParams.value || tiktokParams.value || 0,
-            currency: tiktokParams.currency || 'BDT',
-            content_name: tiktokParams.content_name,
-          },
+          properties: properties,
         };
 
-        // Remove undefined values
-        Object.keys(tiktokPayload.properties).forEach(key => {
-          if (tiktokPayload.properties[key as keyof typeof tiktokPayload.properties] === undefined) {
-            delete tiktokPayload.properties[key as keyof typeof tiktokPayload.properties];
-          }
-        });
+        // Remove undefined context.user if empty
+        if (!tiktokPayload.context.user || Object.keys(tiktokPayload.context.user).length === 0) {
+          delete tiktokPayload.context.user;
+        }
 
         const tiktokResponse = await fetch(
           'https://business-api.tiktok.com/open_api/v1.3/event/track/',
@@ -249,19 +261,7 @@ export async function POST(request: NextRequest) {
               'Content-Type': 'application/json',
               'Access-Token': TIKTOK_ACCESS_TOKEN,
             },
-            body: JSON.stringify({
-              pixel_code: TIKTOK_PIXEL_ID,
-              event: tiktokEventName,
-              event_id: eventId,
-              timestamp: new Date().toISOString(),
-              context: {
-                page: {
-                  url: request.headers.get('referer') || 'unknown',
-                },
-                user: userData,
-              },
-              properties: tiktokPayload.properties,
-            }),
+            body: JSON.stringify(tiktokPayload),
           }
         );
 
@@ -313,31 +313,17 @@ export async function POST(request: NextRequest) {
         const url = new URL(request.headers.get('referer') || 'https://example.com');
         const gclid = url.searchParams.get('gclid') || googleAdsParams.gclid;
 
-        const googleAdsPayload: any = {
-          conversion_id: GOOGLE_ADS_CONVERSION_ID.replace('AW-', ''),
-          conversion_label: GOOGLE_ADS_CONVERSION_LABEL,
-          value: googleAdsParams.value || 0,
-          currency: googleAdsParams.currency || 'BDT',
-        };
+        // Google Ads Conversion API (server-side)
+        // Use the offline conversion upload API for better reliability
+        const conversionId = GOOGLE_ADS_CONVERSION_ID.replace('AW-', '');
+        const conversionUrl = `https://www.google.com/pagead/conversion/${conversionId}/?label=${GOOGLE_ADS_CONVERSION_LABEL}&value=${googleAdsParams.value || 0}&currency_code=${googleAdsParams.currency || 'BDT'}&api_secret=${GOOGLE_ADS_API_SECRET}`;
+        
+        // Add GCLID if available (for attribution)
+        const finalUrl = gclid ? `${conversionUrl}&gclid=${gclid}` : conversionUrl;
 
-        if (gclid) {
-          googleAdsPayload.gclid = gclid;
-        }
-
-        if (Object.keys(userData).length > 0) {
-          googleAdsPayload.user_data = userData;
-        }
-
-        const googleAdsResponse = await fetch(
-          `https://www.google.com/pagead/conversion/${GOOGLE_ADS_CONVERSION_ID.replace('AW-', '')}/?label=${GOOGLE_ADS_CONVERSION_LABEL}&value=${googleAdsParams.value || 0}&currency_code=${googleAdsParams.currency || 'BDT'}&api_secret=${GOOGLE_ADS_API_SECRET}`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(googleAdsPayload),
-          }
-        );
+        const googleAdsResponse = await fetch(finalUrl, {
+          method: 'GET', // Google Ads conversion API uses GET
+        });
 
         if (googleAdsResponse.ok) {
           results.googleAds = { sent: true, status: googleAdsResponse.status };
