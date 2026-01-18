@@ -111,34 +111,34 @@ export function trackEvent(
 }
 
 /**
- * Track package selection
+ * Track package selection (client-side + server-side)
  */
 export function trackPackageSelect(
   packageId: string,
   packageName: string,
   price?: number
 ): void {
-  trackEvent('select_package', {
+  const eventParams = {
     package_id: packageId,
     package_name: packageName,
     value: price,
     currency: 'BDT',
+  };
+
+  // Client-side tracking (GTM)
+  pushToDataLayer({
+    event: 'select_package',
+    ...eventParams,
   });
 
-  // Also track in Meta Pixel
-  if (isBrowser() && META_PIXEL_ID && window.fbq) {
-    try {
-      window.fbq('track', 'ViewContent', {
-        content_name: packageName,
-        content_ids: [packageId],
-        content_type: 'product',
-        value: price,
-        currency: 'BDT',
-      });
-    } catch (error) {
-      console.error('Error tracking package select in Meta Pixel:', error);
-    }
-  }
+  // Server-side tracking (same domain)
+  sendServerSideEvent('select_package', eventParams, eventParams, {
+    content_name: packageName,
+    content_ids: [packageId],
+    content_type: 'product',
+    value: price,
+    currency: 'BDT',
+  });
 }
 
 /**
@@ -152,31 +152,37 @@ export function trackBookingInitiated(packageId: string): void {
 
 /**
  * Track booking created (when booking is successfully created)
+ * Requires email/phone for server-side Meta tracking
  */
 export function trackBookingCreated(
   bookingId: string,
   packageId: string,
-  value?: number
+  value?: number,
+  email?: string,
+  phone?: string
 ): void {
-  trackEvent('booking_created', {
+  const eventParams = {
     booking_id: bookingId,
     package_id: packageId,
     value: value,
     currency: 'BDT',
+  };
+
+  // Client-side tracking (GTM)
+  pushToDataLayer({
+    event: 'booking_created',
+    ...eventParams,
   });
 
-  if (isBrowser() && META_PIXEL_ID && window.fbq) {
-    try {
-      window.fbq('track', 'AddToCart', {
-        content_ids: [packageId],
-        content_type: 'product',
-        value: value,
-        currency: 'BDT',
-      });
-    } catch (error) {
-      console.error('Error tracking booking created in Meta Pixel:', error);
-    }
-  }
+  // Server-side tracking (same domain)
+  sendServerSideEvent('booking_created', eventParams, eventParams, {
+    email,
+    phone,
+    content_ids: [packageId],
+    content_type: 'product',
+    value: value,
+    currency: 'BDT',
+  });
 }
 
 /**
