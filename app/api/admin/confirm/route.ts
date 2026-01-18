@@ -85,35 +85,61 @@ export async function POST(request: NextRequest) {
         booking.due = (booking.fee || 0) - totalPaid;
       }
 
-      // Track conversion via Meta Conversion API (server-side)
+      // Track conversion via unified tracking API (server-side)
+      // Tracks to: GA4, Meta Pixel, TikTok Pixel, Google Ads
       // This happens in the background, errors won't affect booking confirmation
-      if (process.env.NEXT_PUBLIC_META_PIXEL_ID && process.env.META_ACCESS_TOKEN) {
-        try {
-          // Use internal API route - construct URL from request
-          const url = new URL(request.url);
-          const baseUrl = `${url.protocol}//${url.host}`;
-          
-          await fetch(`${baseUrl}/api/analytics/conversion`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
+      try {
+        const url = new URL(request.url);
+        const baseUrl = `${url.protocol}//${url.host}`;
+        
+        await fetch(`${baseUrl}/api/analytics/track`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            eventName: 'purchase',
+            eventParams: {
+              transaction_id: booking._id.toString(),
+              package_id: booking.packageId,
+              value: booking.fee || 0,
+              currency: 'BDT',
             },
-            body: JSON.stringify({
-              eventName: 'Purchase',
-              bookingId: booking._id.toString(),
-              packageId: booking.packageId,
+            ga4Params: {
+              transaction_id: booking._id.toString(),
+              package_id: booking.packageId,
+              value: booking.fee || 0,
+              currency: 'BDT',
+            },
+            metaParams: {
+              email: booking.email,
+              phone: booking.phone,
+              content_ids: [booking.packageId],
+              content_type: 'product',
+              value: booking.fee || 0,
+              currency: 'BDT',
+            },
+            tiktokParams: {
+              email: booking.email,
+              phone: booking.phone,
+              content_ids: [booking.packageId],
+              package_id: booking.packageId,
+              value: booking.fee || 0,
+              currency: 'BDT',
+            },
+            googleAdsParams: {
               email: booking.email,
               phone: booking.phone,
               value: booking.fee || 0,
               currency: 'BDT',
-            }),
-          }).catch((error) => {
-            // Log but don't throw - conversion tracking failure shouldn't break booking confirmation
-            console.error('[Admin Confirm] Failed to track conversion:', error);
-          });
-        } catch (error) {
-          console.error('[Admin Confirm] Error sending conversion event:', error);
-        }
+            },
+          }),
+        }).catch((error) => {
+          // Log but don't throw - conversion tracking failure shouldn't break booking confirmation
+          console.error('[Admin Confirm] Failed to track conversion:', error);
+        });
+      } catch (error) {
+        console.error('[Admin Confirm] Error sending conversion event:', error);
       }
     }
     

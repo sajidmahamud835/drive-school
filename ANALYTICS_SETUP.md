@@ -15,6 +15,10 @@ The application tracks:
 - Google Tag Manager account (GTM container: `GTM-PZLZB6CX`)
 - Google Analytics 4 account (to be configured in GTM)
 - Meta Business account with Events Manager access (to be configured in GTM)
+- TikTok Ads Manager account (for TikTok Pixel)
+- Google Ads account (for conversion tracking)
+
+**Note**: For comprehensive conversion tracking setup, see `CONVERSION_TRACKING_SETUP.md` - a professional guide covering all platforms.
 
 ---
 

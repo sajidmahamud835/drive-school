@@ -35,12 +35,15 @@ function pushToDataLayer(data: Record<string, any>): void {
 
 /**
  * Send event to server-side tracking API (same domain)
+ * Supports: GA4, Meta Pixel, TikTok Pixel, Google Ads
  */
 async function sendServerSideEvent(
   eventName: string,
   eventParams: Record<string, any> = {},
   ga4Params: Record<string, any> = {},
-  metaParams: Record<string, any> = {}
+  metaParams: Record<string, any> = {},
+  tiktokParams: Record<string, any> = {},
+  googleAdsParams: Record<string, any> = {}
 ): Promise<void> {
   if (!isBrowser()) {
     return;
@@ -57,6 +60,8 @@ async function sendServerSideEvent(
         eventParams,
         ga4Params,
         metaParams,
+        tiktokParams,
+        googleAdsParams,
       }),
     }).catch((error) => {
       // Log but don't throw - server-side tracking failure shouldn't break the app
@@ -112,6 +117,7 @@ export function trackEvent(
 
 /**
  * Track package selection (client-side + server-side)
+ * Tracks to: GA4, Meta Pixel, TikTok Pixel, Google Ads (via GTM)
  */
 export function trackPackageSelect(
   packageId: string,
@@ -125,17 +131,23 @@ export function trackPackageSelect(
     currency: 'BDT',
   };
 
-  // Client-side tracking (GTM)
+  // Client-side tracking (GTM) - will fire tags for all platforms
   pushToDataLayer({
     event: 'select_package',
     ...eventParams,
   });
 
-  // Server-side tracking (same domain)
+  // Server-side tracking (same domain) - bypasses third-party blocking
   sendServerSideEvent('select_package', eventParams, eventParams, {
     content_name: packageName,
     content_ids: [packageId],
     content_type: 'product',
+    value: price,
+    currency: 'BDT',
+  }, {
+    content_name: packageName,
+    content_ids: [packageId],
+    package_id: packageId,
     value: price,
     currency: 'BDT',
   });
@@ -152,7 +164,7 @@ export function trackBookingInitiated(packageId: string): void {
 
 /**
  * Track booking created (when booking is successfully created)
- * Requires email/phone for server-side Meta tracking
+ * Requires email/phone for server-side tracking (Meta, TikTok, Google Ads Enhanced Conversions)
  */
 export function trackBookingCreated(
   bookingId: string,
@@ -168,13 +180,13 @@ export function trackBookingCreated(
     currency: 'BDT',
   };
 
-  // Client-side tracking (GTM)
+  // Client-side tracking (GTM) - will fire tags for all platforms
   pushToDataLayer({
     event: 'booking_created',
     ...eventParams,
   });
 
-  // Server-side tracking (same domain)
+  // Server-side tracking (same domain) - bypasses third-party blocking
   sendServerSideEvent('booking_created', eventParams, eventParams, {
     email,
     phone,
@@ -182,20 +194,58 @@ export function trackBookingCreated(
     content_type: 'product',
     value: value,
     currency: 'BDT',
+  }, {
+    email,
+    phone,
+    content_ids: [packageId],
+    package_id: packageId,
+    value: value,
+    currency: 'BDT',
   });
 }
 
 /**
  * Track booking confirmed (sale conversion)
+ * Critical conversion event - tracks to all platforms
  */
 export function trackBookingConfirmed(
   bookingId: string,
   packageId: string,
-  value?: number
+  value?: number,
+  email?: string,
+  phone?: string
 ): void {
-  trackEvent('purchase', {
+  const eventParams = {
     transaction_id: bookingId,
     package_id: packageId,
+    value: value,
+    currency: 'BDT',
+  };
+
+  // Client-side tracking (GTM) - will fire conversion tags
+  pushToDataLayer({
+    event: 'purchase',
+    ...eventParams,
+  });
+
+  // Server-side tracking (same domain) - critical for conversion attribution
+  sendServerSideEvent('purchase', eventParams, eventParams, {
+    email,
+    phone,
+    content_ids: [packageId],
+    content_type: 'product',
+    value: value,
+    currency: 'BDT',
+  }, {
+    email,
+    phone,
+    content_ids: [packageId],
+    package_id: packageId,
+    value: value,
+    currency: 'BDT',
+  }, {
+    email,
+    phone,
     value: value,
     currency: 'BDT',
   });
