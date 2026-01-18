@@ -1,6 +1,6 @@
 # Analytics Setup Guide
 
-This guide will help you set up Google Analytics 4 (GA4) and Meta Pixel tracking for your driving school application.
+This guide will help you set up Google Tag Manager (GTM), Google Analytics 4 (GA4), and Meta Pixel tracking for your driving school application.
 
 ## Overview
 
@@ -12,9 +12,37 @@ The application tracks:
 
 ## Prerequisites
 
-- Google Analytics 4 account
+- Google Tag Manager account (GTM container: `GTM-PZLZB6CX`)
+- Google Analytics 4 account (optional - can be managed via GTM)
 - Meta Business account with Events Manager access
 - Access to your Vercel project environment variables
+
+---
+
+## Part 0: Google Tag Manager (Already Configured)
+
+**Google Tag Manager is already integrated** in the application with container ID `GTM-PZLZB6CX`.
+
+### What is GTM?
+
+Google Tag Manager allows you to manage multiple tracking tags (GA4, Meta Pixel, etc.) from a single dashboard without code changes. The GTM container is already embedded in the application.
+
+### Next Steps with GTM
+
+1. **Set up GA4 in GTM:**
+   - Go to [Google Tag Manager](https://tagmanager.google.com/)
+   - Select your container (`GTM-PZLZB6CX`)
+   - Go to **Tags** → **New**
+   - Choose **Google Analytics: GA4 Configuration**
+   - Enter your GA4 Measurement ID
+   - Set trigger to **All Pages**
+
+2. **Set up Meta Pixel in GTM (Optional):**
+   - Create a **Custom HTML** tag
+   - Paste your Meta Pixel base code
+   - Set trigger to **All Pages**
+
+**Note:** The application also has direct GA4 and Meta Pixel scripts as a fallback. You can use either approach or both.
 
 ---
 
