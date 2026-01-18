@@ -13,40 +13,47 @@ The application tracks:
 ## Prerequisites
 
 - Google Tag Manager account (GTM container: `GTM-PZLZB6CX`)
-- Google Analytics 4 account (optional - can be managed via GTM)
-- Meta Business account with Events Manager access
-- Access to your Vercel project environment variables
+- Google Analytics 4 account (to be configured in GTM)
+- Meta Business account with Events Manager access (to be configured in GTM)
 
 ---
 
-## Part 0: Google Tag Manager (Already Configured)
+## Part 0: Google Tag Manager (Default Tracking Method)
 
-**Google Tag Manager is already integrated** in the application with container ID `GTM-PZLZB6CX`.
+**Google Tag Manager is the default and only tracking method** in the application. All analytics events are sent to GTM's `dataLayer`, and you configure which tags (GA4, Meta Pixel, etc.) fire in the GTM dashboard.
 
 ### What is GTM?
 
-Google Tag Manager allows you to manage multiple tracking tags (GA4, Meta Pixel, etc.) from a single dashboard without code changes. The GTM container is already embedded in the application.
+Google Tag Manager allows you to manage multiple tracking tags (GA4, Meta Pixel, etc.) from a single dashboard without code changes. The GTM container (`GTM-PZLZB6CX`) is already embedded in the application.
 
-### Next Steps with GTM
+### How It Works
 
-1. **Set up GA4 in GTM:**
-   - Go to [Google Tag Manager](https://tagmanager.google.com/)
-   - Select your container (`GTM-PZLZB6CX`)
+The application pushes events to GTM's `dataLayer`. You then configure tags in GTM to:
+- Listen for specific events
+- Send data to GA4, Meta Pixel, or other platforms
+- Set up triggers and variables
+
+### Setting Up Tags in GTM
+
+1. **Go to [Google Tag Manager](https://tagmanager.google.com/)**
+2. **Select your container** (`GTM-PZLZB6CX`)
+3. **Set up GA4:**
    - Go to **Tags** → **New**
    - Choose **Google Analytics: GA4 Configuration**
    - Enter your GA4 Measurement ID
-   - Set trigger to **All Pages**
+   - Set trigger to **All Pages** (for page views)
+   - Create additional GA4 Event tags for custom events (see Event Reference below)
 
-2. **Set up Meta Pixel in GTM (Optional):**
-   - Create a **Custom HTML** tag
+4. **Set up Meta Pixel:**
+   - Go to **Tags** → **New**
+   - Choose **Custom HTML** tag
    - Paste your Meta Pixel base code
    - Set trigger to **All Pages**
-
-**Note:** The application also has direct GA4 and Meta Pixel scripts as a fallback. You can use either approach or both.
+   - Create additional Meta Pixel Event tags for custom events
 
 ---
 
-## Part 1: Google Analytics 4 Setup
+## Part 1: Setting Up GA4 in GTM
 
 ### Step 1: Get Your GA4 Measurement ID
 
@@ -56,35 +63,45 @@ Google Tag Manager allows you to manage multiple tracking tags (GA4, Meta Pixel,
 4. Click on your web stream
 5. Copy your **Measurement ID** (format: `G-XXXXXXXXXX`)
 
-### Step 2: Add to Environment Variables
+### Step 2: Create GA4 Configuration Tag in GTM
 
-**For Local Development:**
-Add to your `.env.local` file:
-```env
-NEXT_PUBLIC_GA_MEASUREMENT_ID=G-XXXXXXXXXX
-```
+1. Go to [Google Tag Manager](https://tagmanager.google.com/)
+2. Select your container (`GTM-PZLZB6CX`)
+3. Click **Tags** → **New**
+4. Name it: "GA4 Configuration"
+5. Choose **Google Analytics: GA4 Configuration**
+6. Enter your Measurement ID: `G-XXXXXXXXXX`
+7. Set trigger to **All Pages**
+8. Click **Save**
 
-**For Vercel Production:**
-1. Go to your Vercel project dashboard
-2. Navigate to **Settings** → **Environment Variables**
-3. Add:
-   - **Key**: `NEXT_PUBLIC_GA_MEASUREMENT_ID`
-   - **Value**: Your GA4 Measurement ID (e.g., `G-XXXXXXXXXX`)
-   - **Environment**: Production, Preview, Development (select all)
-4. Click **Save**
+### Step 3: Create GA4 Event Tags
 
-**Note:** If you already have `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID` set, the app will use that as a fallback. You can reuse the same ID if it's the same as your GA4 ID.
+For each custom event, create a GA4 Event tag:
 
-### Step 3: Verify GA4 Tracking
+**Example: Package Selection Event**
+1. **Tags** → **New** → Name: "GA4 - Select Package"
+2. Choose **Google Analytics: GA4 Event**
+3. Configuration Tag: Select "GA4 Configuration" (from step 2)
+4. Event Name: `select_package`
+5. Set up Event Parameters:
+   - `package_id`: `{{package_id}}` (create a Data Layer Variable)
+   - `package_name`: `{{package_name}}`
+   - `value`: `{{value}}`
+   - `currency`: `BDT`
+6. Trigger: Create a Custom Event trigger with Event name: `select_package`
 
-1. Deploy your changes to Vercel
+Repeat for other events: `booking_created`, `purchase`, etc.
+
+### Step 4: Verify GA4 Tracking
+
+1. Use GTM Preview mode to test
 2. Visit your website
 3. Go to Google Analytics → **Reports** → **Realtime**
-4. You should see your visit appear within a few seconds
+4. You should see events appearing
 
 ---
 
-## Part 2: Meta Pixel Setup
+## Part 2: Setting Up Meta Pixel in GTM
 
 ### Step 1: Create a Meta Pixel
 
@@ -95,45 +112,81 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID=G-XXXXXXXXXX
 5. Click **Create**
 6. Copy your **Pixel ID** (numeric, e.g., `1234567890`)
 
-### Step 2: Get Meta Access Token (for Conversion API)
+### Step 2: Create Meta Pixel Base Tag in GTM
 
-1. In Events Manager, go to **Settings** → **Conversions API**
-2. Click **Set up manually** or **Generate access token**
-3. Copy the **Access Token** (keep this secure!)
-
-**Important:** The access token is used for server-side conversion tracking, which improves tracking accuracy and helps with iOS 14.5+ privacy changes.
-
-### Step 3: Add to Environment Variables
-
-**For Local Development:**
-Add to your `.env.local` file:
-```env
-NEXT_PUBLIC_META_PIXEL_ID=1234567890
-META_ACCESS_TOKEN=your_access_token_here
+1. In GTM, go to **Tags** → **New**
+2. Name it: "Meta Pixel - Base Code"
+3. Choose **Custom HTML**
+4. Paste the Meta Pixel base code (replace `YOUR_PIXEL_ID` with your actual Pixel ID):
+```html
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', 'YOUR_PIXEL_ID');
+fbq('track', 'PageView');
+</script>
 ```
+5. Set trigger to **All Pages**
+6. Click **Save**
 
-**For Vercel Production:**
-1. Go to your Vercel project dashboard
-2. Navigate to **Settings** → **Environment Variables**
-3. Add both variables:
-   - **Key**: `NEXT_PUBLIC_META_PIXEL_ID`
-     - **Value**: Your Pixel ID (e.g., `1234567890`)
-     - **Environment**: Production, Preview, Development
-   - **Key**: `META_ACCESS_TOKEN`
-     - **Value**: Your access token
-     - **Environment**: Production, Preview, Development
-     - **Note**: This is sensitive - don't commit to Git!
-4. Click **Save** for each
+### Step 3: Create Meta Pixel Event Tags
+
+For each custom event, create a Meta Pixel Event tag:
+
+**Example: ViewContent Event (Package Selection)**
+1. **Tags** → **New** → Name: "Meta Pixel - ViewContent"
+2. Choose **Custom HTML**
+3. Paste:
+```html
+<script>
+fbq('track', 'ViewContent', {
+  content_name: '{{package_name}}',
+  content_ids: ['{{package_id}}'],
+  content_type: 'product',
+  value: {{value}},
+  currency: 'BDT'
+});
+</script>
+```
+4. Trigger: Custom Event trigger with Event name: `select_package`
 
 ### Step 4: Verify Meta Pixel Tracking
 
-1. Deploy your changes to Vercel
-2. Install the [Meta Pixel Helper Chrome Extension](https://chrome.google.com/webstore/detail/facebook-pixel-helper/fdgfkebogiimcoedlicjlajpkdmockpc)
+1. Use GTM Preview mode
+2. Install [Meta Pixel Helper Chrome Extension](https://chrome.google.com/webstore/detail/facebook-pixel-helper/fdgfkebogiimcoedlicjlajpkdmockpc)
 3. Visit your website
-4. The extension should show:
-   - ✅ Pixel loaded
-   - ✅ PageView event fired
+4. The extension should show events firing
 5. In Events Manager → **Test Events**, you should see events appearing
+
+---
+
+## Part 2.5: Server-Side Conversion API (Optional)
+
+For improved tracking accuracy, you can still use the server-side Conversion API:
+
+### Get Meta Access Token
+
+1. In Events Manager, go to **Settings** → **Conversions API**
+2. Click **Set up manually** or **Generate access token**
+3. Copy the **Access Token**
+
+### Add to Environment Variables
+
+**For Vercel Production:**
+1. Go to Vercel project dashboard → **Settings** → **Environment Variables**
+2. Add:
+   - **Key**: `META_ACCESS_TOKEN`
+   - **Value**: Your access token
+   - **Environment**: Production, Preview, Development
+3. Click **Save**
+
+The server-side conversion tracking in `/api/admin/confirm` will still work if `META_ACCESS_TOKEN` is set.
 
 ---
 
@@ -170,19 +223,29 @@ META_ACCESS_TOKEN=your_access_token_here
 
 ## Part 4: Troubleshooting
 
+### GTM Not Loading
+
+**Issue:** GTM container not loading
+- **Check:** Verify GTM container ID `GTM-PZLZB6CX` is correct
+- **Check:** Open browser DevTools → Network tab → Filter "gtm.js" → Should see request to `googletagmanager.com`
+- **Check:** Ensure GTM script is in `<head>` (view page source)
+- **Check:** Use GTM Preview mode to debug
+
 ### GA4 Not Tracking
 
 **Issue:** No events in GA4 Realtime
-- **Check:** Verify `NEXT_PUBLIC_GA_MEASUREMENT_ID` is set correctly
-- **Check:** Open browser DevTools → Network tab → Filter "gtag" → Should see requests to `google-analytics.com`
-- **Check:** Ensure scripts are loading in `<head>` (view page source)
+- **Check:** Verify GA4 Configuration tag is set up in GTM
+- **Check:** Verify GA4 Measurement ID is correct in GTM tag
+- **Check:** Use GTM Preview mode to see if tags are firing
+- **Check:** Open browser DevTools → Network tab → Filter "google-analytics.com" → Should see requests
 
 ### Meta Pixel Not Tracking
 
 **Issue:** Pixel Helper shows no pixel
-- **Check:** Verify `NEXT_PUBLIC_META_PIXEL_ID` is set correctly
+- **Check:** Verify Meta Pixel base tag is set up in GTM
+- **Check:** Verify Pixel ID is correct in GTM tag
+- **Check:** Use GTM Preview mode to see if tags are firing
 - **Check:** Open browser DevTools → Network tab → Filter "fbevents" → Should see requests to `facebook.net`
-- **Check:** Ensure Meta Pixel script is in `<head>` (view page source)
 
 ### Conversion API Not Working
 
@@ -254,16 +317,20 @@ META_ACCESS_TOKEN=your_access_token_here
 
 ## Quick Checklist
 
-- [ ] GA4 Measurement ID obtained and added to environment variables
-- [ ] Meta Pixel created and Pixel ID added to environment variables
-- [ ] Meta Access Token generated and added to environment variables
-- [ ] All environment variables set in Vercel
-- [ ] Deployed to production
+- [ ] GTM container verified (`GTM-PZLZB6CX`)
+- [ ] GA4 Measurement ID obtained
+- [ ] GA4 Configuration tag created in GTM
+- [ ] GA4 Event tags created for custom events
+- [ ] Meta Pixel created
+- [ ] Meta Pixel base tag created in GTM
+- [ ] Meta Pixel event tags created for custom events
+- [ ] GTM Preview mode tested
 - [ ] Verified page views in GA4 Realtime
 - [ ] Verified PageView in Meta Events Manager
 - [ ] Tested package selection tracking
 - [ ] Tested booking creation tracking
 - [ ] Tested conversion tracking (admin confirm)
+- [ ] GTM container published
 
 ---
 

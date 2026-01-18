@@ -1,70 +1,67 @@
 /**
- * Analytics utility for Google Analytics 4 and Meta Pixel
- * Provides typed event tracking functions
+ * Analytics utility for Google Tag Manager (GTM)
+ * All tracking is done via GTM's dataLayer
  */
 
-// Declare gtag and fbq types for TypeScript
+// Declare dataLayer type for TypeScript
 declare global {
   interface Window {
-    gtag?: (
-      command: 'config' | 'event' | 'set',
-      targetId: string | Date,
-      config?: Record<string, any>
-    ) => void;
-    fbq?: (
-      command: 'init' | 'track' | 'trackCustom',
-      eventName: string,
-      params?: Record<string, any>
-    ) => void;
     dataLayer?: any[];
   }
 }
 
-// Get analytics IDs from environment variables
-const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID;
-const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID;
-
 /**
- * Check if we're in the browser and analytics are available
+ * Check if we're in the browser and dataLayer is available
  */
 function isBrowser(): boolean {
   return typeof window !== 'undefined';
 }
 
 /**
- * Track page view in GA4
+ * Push event to GTM dataLayer
  */
-export function trackPageView(url: string, title?: string): void {
-  if (!isBrowser() || !GA_MEASUREMENT_ID || !window.gtag) {
+function pushToDataLayer(data: Record<string, any>): void {
+  if (!isBrowser() || !window.dataLayer) {
     return;
   }
 
   try {
-    window.gtag('config', GA_MEASUREMENT_ID, {
-      page_path: url,
-      page_title: title,
-    });
+    window.dataLayer.push(data);
   } catch (error) {
-    console.error('Error tracking page view:', error);
+    console.error('Error pushing to dataLayer:', error);
   }
 }
 
 /**
- * Track custom event in GA4
+ * Track page view via GTM
+ */
+export function trackPageView(url: string, title?: string): void {
+  if (!isBrowser()) {
+    return;
+  }
+
+  pushToDataLayer({
+    event: 'page_view',
+    page_path: url,
+    page_title: title,
+  });
+}
+
+/**
+ * Track custom event via GTM
  */
 export function trackEvent(
   eventName: string,
   eventParams?: Record<string, any>
 ): void {
-  if (!isBrowser() || !GA_MEASUREMENT_ID || !window.gtag) {
+  if (!isBrowser()) {
     return;
   }
 
-  try {
-    window.gtag('event', eventName, eventParams);
-  } catch (error) {
-    console.error('Error tracking event:', error);
-  }
+  pushToDataLayer({
+    event: eventName,
+    ...eventParams,
+  });
 }
 
 /**
@@ -105,17 +102,6 @@ export function trackBookingInitiated(packageId: string): void {
   trackEvent('begin_checkout', {
     package_id: packageId,
   });
-
-  if (isBrowser() && META_PIXEL_ID && window.fbq) {
-    try {
-      window.fbq('track', 'InitiateCheckout', {
-        content_ids: [packageId],
-        content_type: 'product',
-      });
-    } catch (error) {
-      console.error('Error tracking booking initiated in Meta Pixel:', error);
-    }
-  }
 }
 
 /**
@@ -161,19 +147,6 @@ export function trackBookingConfirmed(
     value: value,
     currency: 'BDT',
   });
-
-  if (isBrowser() && META_PIXEL_ID && window.fbq) {
-    try {
-      window.fbq('track', 'Purchase', {
-        content_ids: [packageId],
-        content_type: 'product',
-        value: value,
-        currency: 'BDT',
-      });
-    } catch (error) {
-      console.error('Error tracking booking confirmed in Meta Pixel:', error);
-    }
-  }
 }
 
 /**
