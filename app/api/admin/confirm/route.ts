@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { bookingId, action } = body;
+    const { bookingId, action, assignedPackage, fee, totalPaid } = body;
 
     if (!bookingId || !action) {
       return NextResponse.json(
@@ -74,13 +74,46 @@ export async function POST(request: NextRequest) {
     booking.status = action === 'confirm' ? 'confirmed' : 'rejected';
     
     if (action === 'confirm') {
-      booking.assignedPackage = assignedPackage;
+      if (assignedPackage) {
+        booking.assignedPackage = assignedPackage;
+      }
       if (fee !== undefined) {
         booking.fee = fee;
       }
       if (totalPaid !== undefined) {
         booking.totalPaid = totalPaid;
         booking.due = (booking.fee || 0) - totalPaid;
+      }
+
+      // Track conversion via Meta Conversion API (server-side)
+      // This happens in the background, errors won't affect booking confirmation
+      if (process.env.NEXT_PUBLIC_META_PIXEL_ID && process.env.META_ACCESS_TOKEN) {
+        try {
+          // Use internal API route - construct URL from request
+          const url = new URL(request.url);
+          const baseUrl = `${url.protocol}//${url.host}`;
+          
+          await fetch(`${baseUrl}/api/analytics/conversion`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              eventName: 'Purchase',
+              bookingId: booking._id.toString(),
+              packageId: booking.packageId,
+              email: booking.email,
+              phone: booking.phone,
+              value: booking.fee || 0,
+              currency: 'BDT',
+            }),
+          }).catch((error) => {
+            // Log but don't throw - conversion tracking failure shouldn't break booking confirmation
+            console.error('[Admin Confirm] Failed to track conversion:', error);
+          });
+        } catch (error) {
+          console.error('[Admin Confirm] Error sending conversion event:', error);
+        }
       }
     }
     

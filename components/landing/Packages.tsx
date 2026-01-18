@@ -6,6 +6,7 @@ import Button from '../ui/Button';
 import { Package } from '@/types';
 import Link from 'next/link';
 import { config } from '@/lib/config';
+import { trackPackageSelect } from '@/lib/analytics';
 
 const packages: Package[] = [
   {
@@ -130,7 +131,11 @@ export default function Packages() {
                       ))}
                     </ul>
                     
-                    <Link href={`/booking?package=${pkg.id}`} className="block">
+                    <Link 
+                      href={`/booking?package=${pkg.id}`} 
+                      className="block"
+                      onClick={() => trackPackageSelect(pkg.id, pkg.name, pkg.price)}
+                    >
                       <Button
                         variant={isPopular ? 'primary' : 'outline'}
                         className={`w-full font-bold py-5 rounded-xl text-lg transition-all ${

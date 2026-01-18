@@ -101,6 +101,18 @@ SMTP_PASS=your-app-password
 SMTP_FROM_EMAIL=your-email@gmail.com
 ```
 
+### Analytics (Optional - for tracking conversions)
+```
+NEXT_PUBLIC_GA_MEASUREMENT_ID=G-XXXXXXXXXX
+NEXT_PUBLIC_META_PIXEL_ID=1234567890
+META_ACCESS_TOKEN=your_meta_access_token
+```
+
+**Notes:**
+- `NEXT_PUBLIC_GA_MEASUREMENT_ID`: Your Google Analytics 4 Measurement ID (or reuse `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID`)
+- `NEXT_PUBLIC_META_PIXEL_ID`: Your Meta Pixel ID from Facebook Events Manager
+- `META_ACCESS_TOKEN`: Access token from Meta for Conversion API (generate in Events Manager → Settings → Conversions API)
+
 ### App URL (Update after deployment)
 ```
 NEXT_PUBLIC_APP_URL=https://your-app.vercel.app

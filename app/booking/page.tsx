@@ -8,6 +8,7 @@ import BookingForm from '@/components/booking/BookingForm';
 import TimeSlotPicker from '@/components/booking/TimeSlotPicker';
 import BookingConfirmation from '@/components/booking/BookingConfirmation';
 import { Package, Booking } from '@/types';
+import { trackBookingCreated } from '@/lib/analytics';
 
 const packages: Package[] = [
   {
@@ -218,6 +219,16 @@ function BookingPageContent() {
         setBooking(newBooking);
         setError(null);
         console.log('Setting step to confirmation');
+        
+        // Track booking creation
+        if (selectedPackage) {
+          trackBookingCreated(
+            newBooking.id,
+            selectedPackage.id,
+            selectedPackage.price
+          );
+        }
+        
         setStep('confirmation');
         
         // Scroll to top to show confirmation
