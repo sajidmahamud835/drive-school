@@ -101,17 +101,24 @@ SMTP_PASS=your-app-password
 SMTP_FROM_EMAIL=your-email@gmail.com
 ```
 
-### Analytics (Optional - for tracking conversions)
+### Analytics (Optional - for dual tracking: client + server-side)
 ```
 NEXT_PUBLIC_GA_MEASUREMENT_ID=G-XXXXXXXXXX
+GA4_API_SECRET=your_ga4_api_secret
 NEXT_PUBLIC_META_PIXEL_ID=1234567890
 META_ACCESS_TOKEN=your_meta_access_token
 ```
 
 **Notes:**
 - `NEXT_PUBLIC_GA_MEASUREMENT_ID`: Your Google Analytics 4 Measurement ID (or reuse `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID`)
+- `GA4_API_SECRET`: GA4 Measurement Protocol API secret (create in GA4 Admin → Data Streams → Measurement Protocol API secrets)
 - `NEXT_PUBLIC_META_PIXEL_ID`: Your Meta Pixel ID from Facebook Events Manager
 - `META_ACCESS_TOKEN`: Access token from Meta for Conversion API (generate in Events Manager → Settings → Conversions API)
+
+**Why Dual Tracking?**
+- Client-side (GTM): Works in browsers that allow third-party tracking
+- Server-side (same domain): Avoids third-party blocking, sends events from your Vercel domain
+- Both methods run in parallel for maximum tracking reliability
 
 ### App URL (Update after deployment)
 ```

@@ -1,6 +1,7 @@
 /**
- * Analytics utility for Google Tag Manager (GTM)
- * All tracking is done via GTM's dataLayer
+ * Analytics utility for dual tracking:
+ * 1. Client-side via GTM dataLayer (for browsers that allow it)
+ * 2. Server-side via API routes (same domain, avoids third-party blocking)
  */
 
 // Declare dataLayer type for TypeScript
@@ -11,14 +12,14 @@ declare global {
 }
 
 /**
- * Check if we're in the browser and dataLayer is available
+ * Check if we're in the browser
  */
 function isBrowser(): boolean {
   return typeof window !== 'undefined';
 }
 
 /**
- * Push event to GTM dataLayer
+ * Push event to GTM dataLayer (client-side)
  */
 function pushToDataLayer(data: Record<string, any>): void {
   if (!isBrowser() || !window.dataLayer) {
@@ -33,22 +34,63 @@ function pushToDataLayer(data: Record<string, any>): void {
 }
 
 /**
- * Track page view via GTM
+ * Send event to server-side tracking API (same domain)
+ */
+async function sendServerSideEvent(
+  eventName: string,
+  eventParams: Record<string, any> = {},
+  ga4Params: Record<string, any> = {},
+  metaParams: Record<string, any> = {}
+): Promise<void> {
+  if (!isBrowser()) {
+    return;
+  }
+
+  try {
+    await fetch('/api/analytics/track', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        eventName,
+        eventParams,
+        ga4Params,
+        metaParams,
+      }),
+    }).catch((error) => {
+      // Log but don't throw - server-side tracking failure shouldn't break the app
+      console.error('[Analytics] Server-side tracking error:', error);
+    });
+  } catch (error) {
+    console.error('[Analytics] Server-side tracking error:', error);
+  }
+}
+
+/**
+ * Track page view via both client-side and server-side
  */
 export function trackPageView(url: string, title?: string): void {
   if (!isBrowser()) {
     return;
   }
 
+  // Client-side tracking (GTM)
   pushToDataLayer({
     event: 'page_view',
+    page_path: url,
+    page_title: title,
+  });
+
+  // Server-side tracking (same domain)
+  sendServerSideEvent('page_view', {
     page_path: url,
     page_title: title,
   });
 }
 
 /**
- * Track custom event via GTM
+ * Track custom event via both client-side and server-side
  */
 export function trackEvent(
   eventName: string,
@@ -58,10 +100,14 @@ export function trackEvent(
     return;
   }
 
+  // Client-side tracking (GTM)
   pushToDataLayer({
     event: eventName,
     ...eventParams,
   });
+
+  // Server-side tracking (same domain)
+  sendServerSideEvent(eventName, eventParams || {});
 }
 
 /**

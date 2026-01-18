@@ -220,12 +220,14 @@ function BookingPageContent() {
         setError(null);
         console.log('Setting step to confirmation');
         
-        // Track booking creation
+        // Track booking creation (with email/phone for server-side tracking)
         if (selectedPackage) {
           trackBookingCreated(
             newBooking.id,
             selectedPackage.id,
-            selectedPackage.price
+            selectedPackage.price,
+            userInfo.email,
+            userInfo.phone
           );
         }
         

@@ -166,27 +166,47 @@ fbq('track', 'ViewContent', {
 
 ---
 
-## Part 2.5: Server-Side Conversion API (Optional)
+## Part 2.5: Server-Side Tracking Setup (Recommended)
 
-For improved tracking accuracy, you can still use the server-side Conversion API:
+**The application now uses dual tracking for maximum reliability:**
+- **Client-side**: Via GTM dataLayer (works when browsers allow third-party tracking)
+- **Server-side**: Via API routes on the same domain (avoids third-party blocking)
 
-### Get Meta Access Token
+This ensures tracking works even when browsers block third-party cookies/scripts.
+
+### Step 1: Get GA4 API Secret (for server-side GA4 tracking)
+
+1. Go to [Google Analytics](https://analytics.google.com/)
+2. **Admin** → **Data Streams** → Select your web stream
+3. Scroll down to **Measurement Protocol API secrets**
+4. Click **Create** → Name it (e.g., "Server-side tracking")
+5. Copy the **Secret value** (you'll only see it once!)
+
+### Step 2: Get Meta Access Token (for server-side Meta tracking)
 
 1. In Events Manager, go to **Settings** → **Conversions API**
 2. Click **Set up manually** or **Generate access token**
-3. Copy the **Access Token**
+3. Copy the **Access Token** (keep this secure!)
 
-### Add to Environment Variables
+### Step 3: Add Environment Variables
 
 **For Vercel Production:**
 1. Go to Vercel project dashboard → **Settings** → **Environment Variables**
-2. Add:
+2. Add all four variables:
+   - **Key**: `GA4_API_SECRET`
+     - **Value**: Your GA4 API secret (from Step 1)
+     - **Environment**: Production, Preview, Development
    - **Key**: `META_ACCESS_TOKEN`
-   - **Value**: Your access token
-   - **Environment**: Production, Preview, Development
-3. Click **Save**
+     - **Value**: Your Meta access token (from Step 2)
+     - **Environment**: Production, Preview, Development
+   - **Key**: `NEXT_PUBLIC_GA_MEASUREMENT_ID` (if not already set)
+   - **Key**: `NEXT_PUBLIC_META_PIXEL_ID` (if not already set)
+3. Click **Save** for each
 
-The server-side conversion tracking in `/api/admin/confirm` will still work if `META_ACCESS_TOKEN` is set.
+**How It Works:**
+- Events are sent to both client-side (GTM dataLayer) and server-side (`/api/analytics/track`)
+- Server-side events are sent from your Vercel domain, avoiding third-party blocking
+- Both methods run in parallel for maximum coverage
 
 ---
 
