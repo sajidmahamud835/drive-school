@@ -86,25 +86,117 @@ fbq('track', 'PageView');
 - **TikTok Pixel - AddToCart**: `ttq.track('AddToCart', {...})`, trigger on `booking_created`
 - **TikTok Pixel - CompletePayment**: `ttq.track('CompletePayment', {...})`, trigger on `purchase`
 
-### Step 5: Set Up Google Ads Conversion Tracking in GTM
+### Step 5: Set Up TikTok Pixel in GTM
+
+1. **Tags** → **New** → Name: "TikTok Pixel - Base Code"
+2. Tag Type: **Custom HTML**
+3. Paste base code (replace `YOUR_PIXEL_ID`):
+```html
+<script>
+!function (w, d, t) {
+  w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var i="https://analytics.tiktok.com/i18n/pixel/events.js";ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=i,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};var o=document.createElement("script");o.type="text/javascript",o.async=!0,o.src=i+"?sdkid="+e+"&lib="+t;var a=document.getElementsByTagName("script")[0];a.parentNode.insertBefore(o,a)};
+  ttq.load('YOUR_PIXEL_ID');
+  ttq.page();
+}(window, document, 'ttq');
+</script>
+```
+4. Trigger: **All Pages**
+5. **Save**
+
+**Create TikTok Pixel Event Tags:**
+- **TikTok Pixel - ViewContent**: 
+  ```html
+  <script>
+  ttq.track('ViewContent', {
+    content_name: '{{package_name}}',
+    content_id: '{{package_id}}',
+    value: {{value}},
+    currency: 'BDT'
+  });
+  </script>
+  ```
+  Trigger: Custom Event `select_package`
+
+- **TikTok Pixel - AddToCart**: 
+  ```html
+  <script>
+  ttq.track('AddToCart', {
+    content_id: '{{package_id}}',
+    value: {{value}},
+    currency: 'BDT'
+  });
+  </script>
+  ```
+  Trigger: Custom Event `booking_created`
+
+- **TikTok Pixel - CompletePayment**: 
+  ```html
+  <script>
+  ttq.track('CompletePayment', {
+    content_id: '{{package_id}}',
+    value: {{value}},
+    currency: 'BDT',
+    order_id: '{{transaction_id}}'
+  });
+  </script>
+  ```
+  Trigger: Custom Event `purchase`
+
+### Step 6: Set Up Google Ads Conversion Tracking in GTM
 
 1. **Tags** → **New** → Name: "Google Ads - Conversion"
 2. Tag Type: **Google Ads Conversion Tracking**
-3. Conversion ID: `AW-XXXXXXXXXX` (your Conversion ID)
+3. Conversion ID: `AW-XXXXXXXXXX` (your Conversion ID, without AW- prefix in some GTM versions)
 4. Conversion Label: `your_conversion_label`
-5. Conversion Value: Use Data Layer Variable `{{value}}`
+5. Conversion Value: Use Data Layer Variable `{{value}}` or `{{eventParams.value}}`
 6. Currency Code: `BDT`
 7. Trigger: Custom Event `purchase`
 8. **Save**
 
 **For Enhanced Conversions:**
-- Enable "User-provided data"
-- Map email/phone from Data Layer Variables
-- Ensure Consent Mode allows `ad_user_data`
+- Enable "User-provided data" in tag settings
+- Create Data Layer Variables:
+  - `{{email}}` - from `eventParams.email` or `user.email`
+  - `{{phone}}` - from `eventParams.phone` or `user.phone`
+- Map these in the tag's "User-provided data" section
+- Ensure Consent Mode allows `ad_user_data` (if using Consent Mode)
+
+**Alternative: Using gtag.js directly in GTM**
+If the Google Ads Conversion tag doesn't work, use Custom HTML:
+```html
+<script>
+gtag('event', 'conversion', {
+  'send_to': 'AW-XXXXXXXXXX/your_conversion_label',
+  'value': {{value}},
+  'currency': 'BDT',
+  'transaction_id': '{{transaction_id}}'
+});
+</script>
+```
+Trigger: Custom Event `purchase`
 
 ---
 
-## Part 2: Server-Side Tracking Setup
+## Part 2: Data Layer Variables Setup (GTM)
+
+Before creating event tags, set up these Data Layer Variables in GTM:
+
+1. Go to **Variables** → **New**
+2. Create these variables:
+   - `package_id` - Data Layer Variable, Data Layer Variable Name: `package_id`
+   - `package_name` - Data Layer Variable, Data Layer Variable Name: `package_name`
+   - `value` - Data Layer Variable, Data Layer Variable Name: `value`
+   - `currency` - Data Layer Variable, Data Layer Variable Name: `currency` (or hardcode `BDT`)
+   - `booking_id` - Data Layer Variable, Data Layer Variable Name: `booking_id`
+   - `transaction_id` - Data Layer Variable, Data Layer Variable Name: `transaction_id`
+   - `email` - Data Layer Variable, Data Layer Variable Name: `email` (for Enhanced Conversions)
+   - `phone` - Data Layer Variable, Data Layer Variable Name: `phone` (for Enhanced Conversions)
+
+These variables will be automatically populated when events are pushed to dataLayer.
+
+---
+
+## Part 3: Server-Side Tracking Setup
 
 ### Step 1: Get GA4 API Secret
 
@@ -127,16 +219,37 @@ fbq('track', 'PageView');
 4. Copy **Pixel ID** (numeric)
 5. Go to **Settings** → **Events API** → **Generate access token** → Copy token
 
-### Step 4: Get Google Ads Conversion ID and Label
+### Step 4: Get TikTok Pixel ID and Access Token
+
+1. Go to [TikTok Ads Manager](https://ads.tiktok.com/)
+2. **Assets** → **Events** → **Web Events**
+3. Click **Manage** → **Create Pixel** (or select existing)
+4. Copy your **Pixel ID** (format: `CMXXXXXXXXXXXXXX` or numeric)
+5. Go to **Settings** → **Events API**
+6. Click **Generate access token** → Copy the token (keep secure!)
+
+**Important**: The access token is used for server-side tracking. Store it securely.
+
+### Step 5: Get Google Ads Conversion ID, Label, and API Secret
 
 1. Go to [Google Ads](https://ads.google.com/)
 2. **Tools & Settings** → **Conversions**
-3. Create or select a conversion action (e.g., "Booking Confirmation")
+3. Create a new conversion action:
+   - **Category**: Purchase/Sale
+   - **Value**: Use different values for each conversion
+   - **Count**: One
+   - **Click-through window**: 30 days
+   - **View-through window**: 1 day
 4. Under **Tag setup**, choose **Use Google Tag Manager**
 5. Copy:
-   - **Conversion ID**: Format `AW-XXXXXXXXXX`
-   - **Conversion Label**: The label string
-6. For server-side: Go to **Tag setup** → **Use Google Tag Manager** → **API secret** → Generate and copy
+   - **Conversion ID**: Format `AW-XXXXXXXXXX` (the full ID including AW-)
+   - **Conversion Label**: The label string (e.g., `abc123`)
+6. For server-side API secret:
+   - In the same conversion action, scroll to **Tag setup**
+   - Click **Use Google Tag Manager** → **API secret** section
+   - Click **Generate** → Copy the API secret (you'll only see it once!)
+
+**Note**: You can create multiple conversion actions for different events (e.g., one for booking created, one for purchase).
 
 ### Step 5: Add Environment Variables to Vercel
 
