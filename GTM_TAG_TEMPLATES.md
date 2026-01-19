@@ -41,11 +41,17 @@ fbq('track', 'AddToCart', {
   content_ids: ['{{package_id}}'],
   content_type: 'product',
   value: {{value}},
-  currency: 'BDT'
+  currency: 'BDT',
+  user_data: {
+    em: ['{{email}}'],
+    ph: ['{{phone}}']
+  }
 });
 </script>
 ```
 **Trigger**: Custom Event `booking_created`
+
+**Note**: `{{email}}` and `{{phone}}` are optional but recommended for Enhanced Conversions. These should be Data Layer Variables.
 
 ### Purchase (Booking Confirmed)
 ```html
@@ -54,11 +60,17 @@ fbq('track', 'Purchase', {
   content_ids: ['{{package_id}}'],
   content_type: 'product',
   value: {{value}},
-  currency: 'BDT'
+  currency: 'BDT',
+  user_data: {
+    em: ['{{email}}'],
+    ph: ['{{phone}}']
+  }
 });
 </script>
 ```
 **Trigger**: Custom Event `purchase`
+
+**Note**: `{{email}}` and `{{phone}}` are optional but recommended for Enhanced Conversions. These should be Data Layer Variables.
 
 ---
 
@@ -94,11 +106,15 @@ ttq.track('ViewContent', {
 ttq.track('AddToCart', {
   content_id: '{{package_id}}',
   value: {{value}},
-  currency: 'BDT'
+  currency: 'BDT',
+  email: '{{email}}',
+  phone_number: '{{phone}}'
 });
 </script>
 ```
 **Trigger**: Custom Event `booking_created`
+
+**Note**: `{{email}}` and `{{phone}}` are optional but recommended for Enhanced Conversions. These should be Data Layer Variables.
 
 ### CompletePayment (Booking Confirmed)
 ```html
@@ -107,11 +123,15 @@ ttq.track('CompletePayment', {
   content_id: '{{package_id}}',
   value: {{value}},
   currency: 'BDT',
-  order_id: '{{transaction_id}}'
+  order_id: '{{transaction_id}}',
+  email: '{{email}}',
+  phone_number: '{{phone}}'
 });
 </script>
 ```
 **Trigger**: Custom Event `purchase`
+
+**Note**: `{{email}}` and `{{phone}}` are optional but recommended for Enhanced Conversions. These should be Data Layer Variables.
 
 ---
 

@@ -12,6 +12,19 @@ declare global {
 }
 
 /**
+ * Get hidden price for package (not visible on website)
+ * Used for measurement tools tracking
+ */
+function getPackageHiddenPrice(packageId: string): number {
+  const pricing: Record<string, number> = {
+    '15-days': 5500,
+    '1-month': 8000,
+    'pay-as-you-go': 0, // Per session pricing - not applicable
+  };
+  return pricing[packageId] || 0;
+}
+
+/**
  * Check if we're in the browser
  */
 function isBrowser(): boolean {
@@ -118,16 +131,20 @@ export function trackEvent(
 /**
  * Track package selection (client-side + server-side)
  * Tracks to: GA4, Meta Pixel, TikTok Pixel, Google Ads (via GTM)
+ * Uses hidden price for measurement tools (not visible on website)
  */
 export function trackPackageSelect(
   packageId: string,
   packageName: string,
-  price?: number
+  visiblePrice?: number
 ): void {
+  // Use hidden price for measurement tools
+  const hiddenPrice = getPackageHiddenPrice(packageId);
+  
   const eventParams = {
-    package_id: packageId,
+    package_id: packageId, // Unique package ID
     package_name: packageName,
-    value: price,
+    value: hiddenPrice, // Hidden price for measurement tools
     currency: 'BDT',
   };
 
@@ -140,15 +157,15 @@ export function trackPackageSelect(
   // Server-side tracking (same domain) - bypasses third-party blocking
   sendServerSideEvent('select_package', eventParams, eventParams, {
     content_name: packageName,
-    content_ids: [packageId],
+    content_ids: [packageId], // Unique package ID
     content_type: 'product',
-    value: price,
+    value: hiddenPrice, // Hidden price
     currency: 'BDT',
   }, {
     content_name: packageName,
-    content_ids: [packageId],
-    package_id: packageId,
-    value: price,
+    content_ids: [packageId], // Unique package ID
+    package_id: packageId, // Unique package ID
+    value: hiddenPrice, // Hidden price
     currency: 'BDT',
   });
 }
@@ -164,42 +181,51 @@ export function trackBookingInitiated(packageId: string): void {
 
 /**
  * Track booking created (when booking is successfully created)
- * Requires email/phone for server-side tracking (Meta, TikTok, Google Ads Enhanced Conversions)
+ * Uses hidden price for measurement tools and includes user details (email/phone)
+ * Required for Enhanced Conversions (Meta, TikTok, Google Ads)
  */
 export function trackBookingCreated(
   bookingId: string,
   packageId: string,
-  value?: number,
+  visiblePrice?: number,
   email?: string,
   phone?: string
 ): void {
+  // Use hidden price for measurement tools
+  const hiddenPrice = getPackageHiddenPrice(packageId);
+  
   const eventParams = {
     booking_id: bookingId,
-    package_id: packageId,
-    value: value,
+    package_id: packageId, // Unique package ID
+    value: hiddenPrice, // Hidden price for measurement tools
     currency: 'BDT',
+    // Include user details in dataLayer for GTM Enhanced Conversions
+    email: email,
+    phone: phone,
   };
 
   // Client-side tracking (GTM) - will fire tags for all platforms
+  // Includes email/phone for Enhanced Conversions
   pushToDataLayer({
     event: 'booking_created',
     ...eventParams,
   });
 
   // Server-side tracking (same domain) - bypasses third-party blocking
+  // Includes email/phone for Enhanced Conversions
   sendServerSideEvent('booking_created', eventParams, eventParams, {
     email,
     phone,
-    content_ids: [packageId],
+    content_ids: [packageId], // Unique package ID
     content_type: 'product',
-    value: value,
+    value: hiddenPrice, // Hidden price
     currency: 'BDT',
   }, {
     email,
     phone,
-    content_ids: [packageId],
-    package_id: packageId,
-    value: value,
+    content_ids: [packageId], // Unique package ID
+    package_id: packageId, // Unique package ID
+    value: hiddenPrice, // Hidden price
     currency: 'BDT',
   });
 }
@@ -207,46 +233,55 @@ export function trackBookingCreated(
 /**
  * Track booking confirmed (sale conversion)
  * Critical conversion event - tracks to all platforms
+ * Uses hidden price for measurement tools and includes user details (email/phone)
  */
 export function trackBookingConfirmed(
   bookingId: string,
   packageId: string,
-  value?: number,
+  visiblePrice?: number,
   email?: string,
   phone?: string
 ): void {
+  // Use hidden price for measurement tools
+  const hiddenPrice = getPackageHiddenPrice(packageId);
+  
   const eventParams = {
     transaction_id: bookingId,
-    package_id: packageId,
-    value: value,
+    package_id: packageId, // Unique package ID
+    value: hiddenPrice, // Hidden price for measurement tools
     currency: 'BDT',
+    // Include user details in dataLayer for GTM Enhanced Conversions
+    email: email,
+    phone: phone,
   };
 
   // Client-side tracking (GTM) - will fire conversion tags
+  // Includes email/phone for Enhanced Conversions
   pushToDataLayer({
     event: 'purchase',
     ...eventParams,
   });
 
   // Server-side tracking (same domain) - critical for conversion attribution
+  // Includes email/phone for Enhanced Conversions
   sendServerSideEvent('purchase', eventParams, eventParams, {
     email,
     phone,
-    content_ids: [packageId],
+    content_ids: [packageId], // Unique package ID
     content_type: 'product',
-    value: value,
+    value: hiddenPrice, // Hidden price
     currency: 'BDT',
   }, {
     email,
     phone,
-    content_ids: [packageId],
-    package_id: packageId,
-    value: value,
+    content_ids: [packageId], // Unique package ID
+    package_id: packageId, // Unique package ID
+    value: hiddenPrice, // Hidden price
     currency: 'BDT',
   }, {
     email,
     phone,
-    value: value,
+    value: hiddenPrice, // Hidden price
     currency: 'BDT',
   });
 }

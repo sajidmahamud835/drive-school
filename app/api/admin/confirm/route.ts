@@ -87,8 +87,17 @@ export async function POST(request: NextRequest) {
 
       // Track conversion via unified tracking API (server-side)
       // Tracks to: GA4, Meta Pixel, TikTok Pixel, Google Ads
-      // This happens in the background, errors won't affect booking confirmation
+      // Uses hidden price for measurement tools based on package ID
+      // Includes email/phone for Enhanced Conversions
       try {
+        // Get hidden price for package (not visible on website)
+        const packageHiddenPrices: Record<string, number> = {
+          '15-days': 5500,
+          '1-month': 8000,
+          'pay-as-you-go': 0,
+        };
+        const hiddenPrice = packageHiddenPrices[booking.packageId] || booking.fee || 0;
+        
         const url = new URL(request.url);
         const baseUrl = `${url.protocol}//${url.host}`;
         
@@ -101,36 +110,36 @@ export async function POST(request: NextRequest) {
             eventName: 'purchase',
             eventParams: {
               transaction_id: booking._id.toString(),
-              package_id: booking.packageId,
-              value: booking.fee || 0,
+              package_id: booking.packageId, // Unique package ID
+              value: hiddenPrice, // Hidden price for measurement tools
               currency: 'BDT',
             },
             ga4Params: {
               transaction_id: booking._id.toString(),
-              package_id: booking.packageId,
-              value: booking.fee || 0,
+              package_id: booking.packageId, // Unique package ID
+              value: hiddenPrice, // Hidden price
               currency: 'BDT',
             },
             metaParams: {
-              email: booking.email,
-              phone: booking.phone,
-              content_ids: [booking.packageId],
+              email: booking.email, // User email for Enhanced Conversions
+              phone: booking.phone, // User phone for Enhanced Conversions
+              content_ids: [booking.packageId], // Unique package ID
               content_type: 'product',
-              value: booking.fee || 0,
+              value: hiddenPrice, // Hidden price
               currency: 'BDT',
             },
             tiktokParams: {
-              email: booking.email,
-              phone: booking.phone,
-              content_ids: [booking.packageId],
-              package_id: booking.packageId,
-              value: booking.fee || 0,
+              email: booking.email, // User email for Enhanced Conversions
+              phone: booking.phone, // User phone for Enhanced Conversions
+              content_ids: [booking.packageId], // Unique package ID
+              package_id: booking.packageId, // Unique package ID
+              value: hiddenPrice, // Hidden price
               currency: 'BDT',
             },
             googleAdsParams: {
-              email: booking.email,
-              phone: booking.phone,
-              value: booking.fee || 0,
+              email: booking.email, // User email for Enhanced Conversions
+              phone: booking.phone, // User phone for Enhanced Conversions
+              value: hiddenPrice, // Hidden price
               currency: 'BDT',
             },
           }),

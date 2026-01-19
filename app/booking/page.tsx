@@ -221,12 +221,13 @@ function BookingPageContent() {
         setError(null);
         console.log('Setting step to confirmation');
         
-        // Track booking creation (with email/phone for server-side tracking)
+        // Track booking creation (with email/phone for Enhanced Conversions)
+        // Uses hidden price for measurement tools
         if (selectedPackage && newBooking.id) {
           trackBookingCreated(
             newBooking.id,
             selectedPackage.id,
-            selectedPackage.price,
+            selectedPackage.price, // Visible price (hidden price used internally)
             userInfo.email,
             userInfo.phone
           );
