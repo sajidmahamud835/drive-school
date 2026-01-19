@@ -102,6 +102,7 @@ function BookingPageContent() {
     phone: string;
     name: string;
     age: number;
+    gender: 'male' | 'female' | 'other';
     whyLearning: 'going-abroad' | 'interest-hobby' | 'work-career' | 'others';
     address: string;
     previousTraining: 'yes' | 'no';
@@ -221,7 +222,7 @@ function BookingPageContent() {
         console.log('Setting step to confirmation');
         
         // Track booking creation (with email/phone for server-side tracking)
-        if (selectedPackage) {
+        if (selectedPackage && newBooking.id) {
           trackBookingCreated(
             newBooking.id,
             selectedPackage.id,
@@ -343,7 +344,7 @@ function BookingPageContent() {
         )}
         {step === 'confirmation' && (
           booking && selectedPackage ? (
-            <BookingConfirmation booking={booking} packageInfo={selectedPackage} studentId={studentId || undefined} />
+            <BookingConfirmation booking={booking} packageInfo={selectedPackage} studentId={studentId ?? undefined} />
           ) : (
             <div className="text-center py-12">
               <p className="text-red-600 font-medium text-lg mb-4">বুকিং লোড করতে সমস্যা হয়েছে</p>

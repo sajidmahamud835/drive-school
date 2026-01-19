@@ -14,21 +14,19 @@ const whyLearningOptions = [
   { value: 'others', label: 'অন্যান্য' },
 ] as const;
 
+const genderEnum = ['male', 'female', 'other'] as const;
+const whyLearningEnum = ['going-abroad', 'interest-hobby', 'work-career', 'others'] as const;
+const previousTrainingEnum = ['yes', 'no'] as const;
+
 const bookingSchema = z.object({
   name: z.string().min(2, 'নাম কমপক্ষে ২ অক্ষর হতে হবে'),
   age: z.number().min(16, 'বয়স কমপক্ষে ১৬ বছর হতে হবে').max(100),
-  gender: z.enum(['male', 'female', 'other'], {
-    errorMap: () => ({ message: 'অনুগ্রহ করে লিঙ্গ নির্বাচন করুন' }),
-  }),
+  gender: z.enum(genderEnum),
   email: z.string().email('সঠিক ইমেইল ঠিকানা দিন'),
   phone: z.string().min(10, 'ফোন নম্বর কমপক্ষে ১০ সংখ্যা হতে হবে'),
-  whyLearning: z.enum(['going-abroad', 'interest-hobby', 'work-career', 'others'], {
-    errorMap: () => ({ message: 'অনুগ্রহ করে একটি অপশন নির্বাচন করুন' }),
-  }),
+  whyLearning: z.enum(whyLearningEnum),
   address: z.string().min(5, 'সঠিক ঠিকানা দিন'),
-  previousTraining: z.enum(['yes', 'no'], {
-    errorMap: () => ({ message: 'অনুগ্রহ করে একটি অপশন নির্বাচন করুন' }),
-  }),
+  previousTraining: z.enum(previousTrainingEnum),
   password: z.string().min(6, 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষর হতে হবে').optional().or(z.literal('')),
 });
 

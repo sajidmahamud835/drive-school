@@ -418,7 +418,7 @@ export default function BookingDetailModal({
                     phone: booking.phone,
                     email: booking.email,
                     address: booking.address,
-                    fee: booking.fee,
+                    fee: booking.fee || 0,
                     totalPaid: booking.totalPaid || 0,
                     due: booking.due || 0,
                     payments: booking.payments,

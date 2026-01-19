@@ -12,6 +12,7 @@ const monthNames = ['জানুয়ারি', 'ফেব্রুয়া�
 interface BookingConfirmationProps {
   booking: Booking;
   packageInfo: Package | null;
+  studentId?: string;
 }
 
 export default function BookingConfirmation({ booking, packageInfo, studentId }: BookingConfirmationProps) {

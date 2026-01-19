@@ -13,7 +13,7 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-let app: FirebaseApp;
+let app: FirebaseApp | undefined;
 let auth: Auth;
 let analytics: Analytics | null = null;
 
@@ -23,7 +23,7 @@ if (typeof window !== 'undefined') {
     app = initializeApp(firebaseConfig);
     // Initialize Analytics only in browser and if supported
     isSupported().then((supported) => {
-      if (supported) {
+      if (supported && app) {
         analytics = getAnalytics(app);
       }
     }).catch(() => {
