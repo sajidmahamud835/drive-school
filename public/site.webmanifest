@@ -4,7 +4,7 @@
   "description": "বরিশালের #1 ড্রাইভিং ট্রেনিং সেন্টার",
   "icons": [
     {
-      "src": "/favicon.svg",
+      "src": "/icon.svg",
       "sizes": "any",
       "type": "image/svg+xml"
     },
