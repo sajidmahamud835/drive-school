@@ -23,7 +23,7 @@ const notoSansBengali = Noto_Sans_Bengali({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://threestardriving.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://3stardriving.alharih.com'),
   title: {
     default: "থ্রি স্টার ড্রাইভিং ট্রেনিং সেন্টার | বরিশালের সেরা ড্রাইভিং স্কুল | এখনই বুক করুন",
     template: "%s | থ্রি স্টার ড্রাইভিং ট্রেনিং সেন্টার"
@@ -107,7 +107,7 @@ export default function RootLayout({
   const trainingCenterName = process.env.NEXT_PUBLIC_TRAINING_CENTER_NAME || 'থ্রি স্টার ড্রাইভিং ট্রেনিং সেন্টার';
   const trainingCenterAddress = process.env.NEXT_PUBLIC_TRAINING_CENTER_ADDRESS || 'বান্দ রোড, বরিশাল 8200';
   const trainingCenterPhone = process.env.NEXT_PUBLIC_TRAINING_CENTER_PHONE || '+8801707969391';
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://threestardriving.com';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://3stardriving.alharih.com';
 
   // Structured Data (JSON-LD) for LocalBusiness
   const structuredData = {

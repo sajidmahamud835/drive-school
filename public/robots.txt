@@ -2,7 +2,7 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://threestardriving.com/sitemap.xml
+Sitemap: https://3stardriving.alharih.com/sitemap.xml
 
 # Disallow admin and API routes
 Disallow: /admin
