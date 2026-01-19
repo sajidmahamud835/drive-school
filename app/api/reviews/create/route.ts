@@ -40,6 +40,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Parse request body first
+    const body = await request.json();
+    const { rating, text } = body;
+
+    // Validation
+    if (!rating || rating < 1 || rating > 5) {
+      return NextResponse.json(
+        { success: false, error: 'রেটিং ১ থেকে ৫ এর মধ্যে হতে হবে' },
+        { status: 400 }
+      );
+    }
+
+    if (!text || text.trim().length < 10) {
+      return NextResponse.json(
+        { success: false, error: 'রিভিউ কমপক্ষে ১০ অক্ষর হতে হবে' },
+        { status: 400 }
+      );
+    }
+
     // Check if user has already submitted an approved review
     // Allow pending/rejected reviews to be resubmitted
     const existingReview = await Review.findOne({ 
@@ -77,9 +96,6 @@ export async function POST(request: NextRequest) {
         message: 'রিভিউ আপডেট করা হয়েছে। অ্যাডমিন অনুমোদনের পর এটি প্রকাশিত হবে।',
       });
     }
-
-    const body = await request.json();
-    const { rating, text } = body;
 
     // Validation
     if (!rating || rating < 1 || rating > 5) {
