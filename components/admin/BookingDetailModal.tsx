@@ -87,10 +87,9 @@ export default function BookingDetailModal({
 
   const handleAddPayment = () => {
     if (paymentAmount > 0 && onUpdateFee) {
+      // Don't pass totalPaid - let the API calculate it from current booking + payment amount
       onUpdateFee({
         bookingId: booking.id!,
-        fee,
-        totalPaid: totalPaid + paymentAmount,
         paymentAmount,
         paymentMethod,
         paymentNotes,

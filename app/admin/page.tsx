@@ -277,10 +277,32 @@ export default function AdminPage() {
       // Find the booking to get current totalPaid
       const currentBooking = bookings.find(b => b.id === data.bookingId);
       
-      // Calculate new total paid if adding payment
-      let newTotalPaid = data.totalPaid || currentBooking?.totalPaid || 0;
+      // Prepare request body
+      const requestBody: any = {
+        bookingId: data.bookingId,
+      };
+
+      // If adding a payment, only send payment object (API will handle totalPaid calculation)
       if (data.paymentAmount && data.paymentAmount > 0) {
-        newTotalPaid = (currentBooking?.totalPaid || 0) + data.paymentAmount;
+        requestBody.payment = {
+          amount: data.paymentAmount,
+          method: data.paymentMethod || 'cash',
+          notes: data.paymentNotes || '',
+          date: new Date(),
+        };
+        // Don't send totalPaid when adding payment - let API calculate it from current booking
+        // Only include fee if explicitly provided
+        if (data.fee !== undefined) {
+          requestBody.fee = data.fee;
+        }
+      } else {
+        // If updating fee/totalPaid directly (not adding payment)
+        if (data.fee !== undefined) {
+          requestBody.fee = data.fee;
+        }
+        if (data.totalPaid !== undefined) {
+          requestBody.totalPaid = data.totalPaid;
+        }
       }
 
       const response = await fetch('/api/admin/update-booking', {
@@ -289,17 +311,7 @@ export default function AdminPage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${idToken}`,
         },
-        body: JSON.stringify({
-          bookingId: data.bookingId,
-          fee: data.fee,
-          totalPaid: newTotalPaid,
-          payment: data.paymentAmount ? {
-            amount: data.paymentAmount,
-            method: data.paymentMethod,
-            notes: data.paymentNotes,
-            date: new Date(),
-          } : undefined,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       const result = await response.json();
@@ -311,13 +323,28 @@ export default function AdminPage() {
       // Refresh bookings
       await fetchBookings(filter);
       if (selectedBooking && selectedBooking.id === data.bookingId) {
-        setSelectedBooking({
-          ...selectedBooking,
-          fee: result.booking.fee,
-          totalPaid: result.booking.totalPaid,
-          due: result.booking.due,
-          payments: result.booking.payments,
-        });
+        // Update selected booking with latest data from API
+        const updatedBooking = bookings.find(b => b.id === data.bookingId);
+        if (updatedBooking) {
+          setSelectedBooking({
+            ...selectedBooking,
+            fee: result.booking.fee,
+            totalPaid: result.booking.totalPaid,
+            due: result.booking.due,
+            payments: result.booking.payments || [],
+            invoiceNumber: result.booking.invoiceNumber,
+          });
+        } else {
+          // If not found in list, use result data
+          setSelectedBooking({
+            ...selectedBooking,
+            fee: result.booking.fee,
+            totalPaid: result.booking.totalPaid,
+            due: result.booking.due,
+            payments: result.booking.payments || [],
+            invoiceNumber: result.booking.invoiceNumber,
+          });
+        }
       }
     } catch (error: any) {
       console.error('Update fee error:', error);

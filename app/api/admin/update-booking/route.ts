@@ -56,16 +56,12 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Update fee fields
+    // Update fee fields (only if not adding a payment)
     if (fee !== undefined) {
       booking.fee = fee;
     }
-    if (totalPaid !== undefined) {
-      booking.totalPaid = totalPaid;
-      booking.due = (booking.fee || 0) - totalPaid;
-    }
-
-    // Add payment if provided
+    
+    // Add payment if provided (this should happen first to avoid double counting)
     if (payment && payment.amount > 0) {
       if (!booking.payments) {
         booking.payments = [];
@@ -74,12 +70,16 @@ export async function PUT(request: NextRequest) {
         amount: payment.amount,
         date: payment.date ? new Date(payment.date) : new Date(),
         method: payment.method || 'cash',
-        notes: payment.notes,
+        notes: payment.notes || '',
       });
-      // Update total paid
+      // Update total paid by adding payment amount
       const newTotalPaid = (booking.totalPaid || 0) + payment.amount;
       booking.totalPaid = newTotalPaid;
       booking.due = (booking.fee || 0) - newTotalPaid;
+    } else if (totalPaid !== undefined) {
+      // Only update totalPaid directly if NOT adding a payment
+      booking.totalPaid = totalPaid;
+      booking.due = (booking.fee || 0) - totalPaid;
     }
 
     // Generate invoice number if fee is set and invoice doesn't exist
