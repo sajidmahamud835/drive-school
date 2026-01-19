@@ -105,12 +105,12 @@ export default function Testimonials() {
             আমাদের ড্রাইভিং স্কুলের স্নাতকদের বাস্তব অভিজ্ঞতা
           </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
           {loading ? (
             // Loading skeleton
             Array.from({ length: 3 }).map((_, index) => (
               <div key={index} className="bg-gray-50 rounded-2xl overflow-hidden border-2 border-gray-200 animate-pulse">
-                <div className="aspect-video bg-gray-200"></div>
+                <div className="aspect-[9/16] bg-gray-200 max-w-sm mx-auto"></div>
                 <div className="p-6">
                   <div className="h-6 bg-gray-200 rounded mb-2"></div>
                   <div className="h-4 bg-gray-200 rounded w-2/3"></div>
@@ -126,7 +126,7 @@ export default function Testimonials() {
                   className="bg-gray-50 rounded-2xl overflow-hidden border-2 border-gray-200 hover:border-tinder transition-all transform hover:scale-105 shadow-lg cursor-pointer"
                   onClick={() => resolved && setSelectedVideo(resolved)}
                 >
-                  <div className="aspect-video bg-black relative group overflow-hidden">
+                  <div className="aspect-[9/16] bg-black relative group overflow-hidden max-w-sm mx-auto">
                     {/* Facebook Video Embed */}
                     {resolved ? (
                       <iframe

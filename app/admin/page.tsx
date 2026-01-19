@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import BookingList from '@/components/admin/BookingList';
 import BookingDetailModal from '@/components/admin/BookingDetailModal';
@@ -8,7 +9,8 @@ import Button from '@/components/ui/Button';
 import { Booking, User } from '@/types';
 
 export default function AdminPage() {
-  const { user, getIdToken } = useAuth();
+  const router = useRouter();
+  const { user, getIdToken, loading: authLoading } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState<'all' | 'pending' | 'confirmed' | 'rejected'>('pending');
@@ -54,6 +56,13 @@ export default function AdminPage() {
       setLoading(false);
     }
   };
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login?redirect=/admin');
+    }
+  }, [user, authLoading, router]);
 
   useEffect(() => {
     if (user) {
@@ -353,6 +362,23 @@ export default function AdminPage() {
     if (filter === 'all') return true;
     return b.status === filter;
   });
+
+  // Show loading state while checking authentication
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-white">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-tinder mx-auto"></div>
+          <p className="mt-4 text-gray-600">লোড হচ্ছে...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render content if not authenticated (will redirect)
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12">
