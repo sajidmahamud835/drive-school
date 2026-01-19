@@ -77,8 +77,9 @@ export async function PUT(request: NextRequest) {
         notes: payment.notes,
       });
       // Update total paid
-      booking.totalPaid = (booking.totalPaid || 0) + payment.amount;
-      booking.due = (booking.fee || 0) - booking.totalPaid;
+      const newTotalPaid = (booking.totalPaid || 0) + payment.amount;
+      booking.totalPaid = newTotalPaid;
+      booking.due = (booking.fee || 0) - newTotalPaid;
     }
 
     // Generate invoice number if fee is set and invoice doesn't exist
