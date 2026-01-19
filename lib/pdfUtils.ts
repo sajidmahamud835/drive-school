@@ -1,4 +1,5 @@
 import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import { config } from './config';
 
 interface StudentInfo {
@@ -224,133 +225,144 @@ export function generateCompletionCertificate(info: CertificateInfo): void {
 }
 
 /**
- * Generate Invoice PDF
+ * Generate Invoice PDF using HTML to preserve Bengali fonts
  */
-export function generateInvoice(invoice: InvoiceInfo): void {
-  const doc = new jsPDF({
-    orientation: 'portrait',
-    unit: 'mm',
-    format: 'a4',
+export async function generateInvoice(invoice: InvoiceInfo): Promise<void> {
+  // Create a temporary HTML element for the invoice
+  const invoiceDiv = document.createElement('div');
+  invoiceDiv.style.position = 'absolute';
+  invoiceDiv.style.left = '-9999px';
+  invoiceDiv.style.width = '210mm'; // A4 width
+  invoiceDiv.style.padding = '20mm';
+  invoiceDiv.style.backgroundColor = 'white';
+  invoiceDiv.style.fontFamily = 'system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Bengali", "Mukti", sans-serif';
+  invoiceDiv.style.fontSize = '14px';
+  invoiceDiv.style.color = '#000';
+  invoiceDiv.style.lineHeight = '1.6';
+
+  const issueDateStr = new Date(invoice.issueDate).toLocaleDateString('bn-BD', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
   });
 
-  // Header
-  doc.setFillColor(232, 30, 99);
-  doc.rect(0, 0, 210, 40, 'F');
+  invoiceDiv.innerHTML = `
+    <div style="background: linear-gradient(135deg, #E81E64 0%, #FF6B9D 100%); padding: 30px 20px; margin: -20mm -20mm 20px -20mm; text-align: center;">
+      <h1 style="color: white; margin: 0; font-size: 24px; font-weight: bold;">থ্রি স্টার ড্রাইভিং ট্রেনিং সেন্টার</h1>
+      <p style="color: white; margin: 10px 0 0 0; font-size: 16px;">ইনভয়েস</p>
+    </div>
 
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(20);
-  doc.setFont('helvetica', 'bold');
-  doc.text('থ্রি স্টার ড্রাইভিং ট্রেনিং সেন্টার', 105, 15, { align: 'center' });
+    <div style="background: white; padding: 15px; margin-bottom: 20px; border: 1px solid #e5e7eb;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <p style="margin: 0; font-size: 16px; font-weight: bold;">ইনভয়েস নম্বর: ${invoice.invoiceNumber}</p>
+        <p style="margin: 0; font-size: 12px;">তারিখ: ${issueDateStr}</p>
+      </div>
+    </div>
 
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'normal');
-  doc.text('ইনভয়েস', 105, 28, { align: 'center' });
+    <div style="margin-bottom: 20px;">
+      <h2 style="font-size: 16px; font-weight: bold; margin-bottom: 10px; color: #111;">শিক্ষার্থীর তথ্য:</h2>
+      <p style="margin: 5px 0;"><strong>নাম:</strong> ${invoice.name}</p>
+      <p style="margin: 5px 0;"><strong>স্টুডেন্ট আইডি:</strong> ${invoice.studentId}</p>
+      <p style="margin: 5px 0;"><strong>ফোন:</strong> ${invoice.phone}</p>
+      ${invoice.email ? `<p style="margin: 5px 0;"><strong>ইমেইল:</strong> ${invoice.email}</p>` : ''}
+      ${invoice.address ? `<p style="margin: 5px 0;"><strong>ঠিকানা:</strong> ${invoice.address}</p>` : ''}
+    </div>
 
-  // Invoice Number
-  doc.setFillColor(255, 255, 255);
-  doc.rect(10, 45, 190, 15, 'F');
-  doc.setTextColor(0, 0, 0);
-  doc.setFontSize(14);
-  doc.setFont('helvetica', 'bold');
-  doc.text(`ইনভয়েস নম্বর: ${invoice.invoiceNumber}`, 15, 55);
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
-  const issueDateStr = new Date(invoice.issueDate).toLocaleDateString('bn-BD');
-  doc.text(`তারিখ: ${issueDateStr}`, 150, 55);
+    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
 
-  // Student Info
-  let yPos = 70;
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'bold');
-  doc.text('শিক্ষার্থীর তথ্য:', 15, yPos);
-  yPos += 8;
+    <div style="margin-bottom: 20px;">
+      <h2 style="font-size: 16px; font-weight: bold; margin-bottom: 15px; color: #111;">ফি বিবরণ:</h2>
+      <div style="display: flex; justify-content: space-between; margin: 10px 0;">
+        <span>মোট ফি:</span>
+        <span style="font-weight: bold;">৳${invoice.fee.toLocaleString('bn-BD')}</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin: 10px 0;">
+        <span>মোট প্রদত্ত:</span>
+        <span style="font-weight: bold;">৳${invoice.totalPaid.toLocaleString('bn-BD')}</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin: 10px 0; padding-top: 10px; border-top: 2px solid #e5e7eb;">
+        <span style="font-weight: bold;">বাকি:</span>
+        <span style="font-weight: bold; color: ${invoice.due > 0 ? '#E81E64' : '#10b981'};">
+          ৳${invoice.due.toLocaleString('bn-BD')}
+        </span>
+      </div>
+    </div>
 
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'normal');
-  doc.text(`নাম: ${invoice.name}`, 15, yPos);
-  yPos += 6;
-  doc.text(`স্টুডেন্ট আইডি: ${invoice.studentId}`, 15, yPos);
-  yPos += 6;
-  doc.text(`ফোন: ${invoice.phone}`, 15, yPos);
-  yPos += 6;
-  if (invoice.email) {
-    doc.text(`ইমেইল: ${invoice.email}`, 15, yPos);
-    yPos += 6;
-  }
-  if (invoice.address) {
-    const addressLines = doc.splitTextToSize(`ঠিকানা: ${invoice.address}`, 180);
-    doc.text(addressLines, 15, yPos);
-    yPos += addressLines.length * 6;
-  }
+    ${invoice.payments && invoice.payments.length > 0 ? `
+      <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
+      <div style="margin-bottom: 20px;">
+        <h2 style="font-size: 16px; font-weight: bold; margin-bottom: 15px; color: #111;">পেমেন্ট ইতিহাস:</h2>
+        ${invoice.payments.map((payment, index) => {
+          const paymentDate = new Date(payment.date).toLocaleDateString('bn-BD', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          });
+          const methodText = payment.method === 'cash' ? 'নগদ' : payment.method === 'bank' ? 'ব্যাংক' : 'অন্যান্য';
+          return `
+            <div style="margin: 10px 0; padding-left: 15px;">
+              <p style="margin: 5px 0;">
+                ${index + 1}. ৳${payment.amount.toLocaleString('bn-BD')} - ${methodText} - ${paymentDate}
+              </p>
+              ${payment.notes ? `<p style="margin: 5px 0; color: #666; font-size: 12px;">   নোট: ${payment.notes}</p>` : ''}
+            </div>
+          `;
+        }).join('')}
+      </div>
+    ` : ''}
 
-  // Fee Details
-  yPos += 5;
-  doc.setDrawColor(200, 200, 200);
-  doc.setLineWidth(0.5);
-  doc.line(15, yPos, 195, yPos);
-  yPos += 10;
+    <div style="margin-top: 40px; text-align: center; color: #666; font-size: 10px; font-style: italic;">
+      <p style="margin: 0;">এই ইনভয়েসটি প্রশিক্ষণ কেন্দ্র থেকে জারি করা হয়েছে</p>
+    </div>
+  `;
 
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'bold');
-  doc.text('ফি বিবরণ:', 15, yPos);
-  yPos += 10;
+  document.body.appendChild(invoiceDiv);
 
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'normal');
-  doc.text('মোট ফি:', 15, yPos);
-  doc.text(`৳${invoice.fee.toLocaleString('bn-BD')}`, 150, yPos, { align: 'right' });
-  yPos += 8;
-
-  doc.text('মোট প্রদত্ত:', 15, yPos);
-  doc.text(`৳${invoice.totalPaid.toLocaleString('bn-BD')}`, 150, yPos, { align: 'right' });
-  yPos += 8;
-
-  doc.setFont('helvetica', 'bold');
-  doc.text('বাকি:', 15, yPos);
-  doc.setTextColor(invoice.due > 0 ? 232 : 0, invoice.due > 0 ? 30 : 150, invoice.due > 0 ? 99 : 0);
-  doc.text(`৳${invoice.due.toLocaleString('bn-BD')}`, 150, yPos, { align: 'right' });
-  doc.setTextColor(0, 0, 0);
-  yPos += 10;
-
-  // Payment History
-  if (invoice.payments && invoice.payments.length > 0) {
-    doc.setDrawColor(200, 200, 200);
-    doc.line(15, yPos, 195, yPos);
-    yPos += 10;
-
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text('পেমেন্ট ইতিহাস:', 15, yPos);
-    yPos += 8;
-
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    invoice.payments.forEach((payment, index) => {
-      if (yPos > 250) {
-        doc.addPage();
-        yPos = 20;
-      }
-      const paymentDate = new Date(payment.date).toLocaleDateString('bn-BD');
-      const methodText = payment.method === 'cash' ? 'নগদ' : payment.method === 'bank' ? 'ব্যাংক' : 'অন্যান্য';
-      doc.text(`${index + 1}. ৳${payment.amount.toLocaleString('bn-BD')} - ${methodText} - ${paymentDate}`, 20, yPos);
-      if (payment.notes) {
-        yPos += 5;
-        doc.setFontSize(9);
-        doc.setTextColor(100, 100, 100);
-        doc.text(`   নোট: ${payment.notes}`, 20, yPos);
-        doc.setTextColor(0, 0, 0);
-        doc.setFontSize(10);
-      }
-      yPos += 7;
+  try {
+    // Convert HTML to canvas
+    const canvas = await html2canvas(invoiceDiv, {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      backgroundColor: '#ffffff',
     });
+
+    // Remove temporary element
+    document.body.removeChild(invoiceDiv);
+
+    // Convert canvas to PDF
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4',
+    });
+
+    const imgWidth = 210; // A4 width in mm
+    const pageHeight = 297; // A4 height in mm
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    let heightLeft = imgHeight;
+
+    let position = 0;
+
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+
+    while (heightLeft >= 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+
+    // Save PDF
+    pdf.save(`invoice-${invoice.invoiceNumber}.pdf`);
+  } catch (error) {
+    console.error('Error generating invoice PDF:', error);
+    // Remove temporary element in case of error
+    if (document.body.contains(invoiceDiv)) {
+      document.body.removeChild(invoiceDiv);
+    }
+    throw error;
   }
-
-  // Footer
-  doc.setFontSize(8);
-  doc.setTextColor(100, 100, 100);
-  doc.setFont('helvetica', 'italic');
-  doc.text('এই ইনভয়েসটি প্রশিক্ষণ কেন্দ্র থেকে জারি করা হয়েছে', 105, 280, { align: 'center' });
-
-  // Save PDF
-  doc.save(`invoice-${invoice.invoiceNumber}.pdf`);
 }

@@ -410,20 +410,25 @@ export default function BookingDetailModal({
               <Button
                 variant="outline"
                 size="lg"
-                onClick={() => {
-                  generateInvoice({
-                    invoiceNumber: booking.invoiceNumber!,
-                    studentId: localUser?.studentId || booking.name,
-                    name: booking.name,
-                    phone: booking.phone,
-                    email: booking.email,
-                    address: booking.address,
-                    fee: booking.fee || 0,
-                    totalPaid: booking.totalPaid || 0,
-                    due: booking.due || 0,
-                    payments: booking.payments,
-                    issueDate: new Date(),
-                  });
+                onClick={async () => {
+                  try {
+                    await generateInvoice({
+                      invoiceNumber: booking.invoiceNumber!,
+                      studentId: localUser?.studentId || booking.name,
+                      name: booking.name,
+                      phone: booking.phone,
+                      email: booking.email,
+                      address: booking.address,
+                      fee: booking.fee || 0,
+                      totalPaid: booking.totalPaid || 0,
+                      due: booking.due || 0,
+                      payments: booking.payments,
+                      issueDate: new Date(),
+                    });
+                  } catch (error) {
+                    console.error('Error generating invoice:', error);
+                    alert('ইনভয়েস তৈরি করতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।');
+                  }
                 }}
                 className="w-full border-2 border-green-500 text-green-600 hover:bg-green-50"
               >
