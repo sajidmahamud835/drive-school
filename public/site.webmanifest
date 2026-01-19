@@ -1,0 +1,22 @@
+{
+  "name": "থ্রি স্টার ড্রাইভিং ট্রেনিং সেন্টার",
+  "short_name": "থ্রি স্টার ড্রাইভিং",
+  "description": "বরিশালের #1 ড্রাইভিং ট্রেনিং সেন্টার",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "32x32",
+      "type": "image/x-icon"
+    }
+  ],
+  "theme_color": "#E81E64",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "start_url": "/",
+  "lang": "bn"
+}
