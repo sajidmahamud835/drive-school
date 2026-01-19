@@ -1,23 +1,53 @@
 'use client';
 
+import { useState, useEffect, useMemo } from 'react';
+import testimonialsData from '@/data/testimonials.json';
+
+interface Testimonial {
+  id: string;
+  name: string;
+  videoUrl: string;
+  tags: string[];
+  order: number;
+}
+
+/**
+ * Randomize array using Fisher-Yates shuffle algorithm
+ */
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+/**
+ * Convert Facebook share URL to embed URL
+ * Facebook share links need to be converted to embed format for iframe
+ */
+function getFacebookEmbedUrl(shareUrl: string): string {
+  // Facebook Video Player embed format
+  // We'll use the share URL directly - Facebook's embed system should handle it
+  return `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(shareUrl)}&show_text=false&width=734&height=413`;
+}
+
 export default function Testimonials() {
-  const testimonials = [
-    {
-      id: 1,
-      name: 'শিক্ষার্থী সাক্ষাৎকার ১',
-      videoUrl: '/videos/testimonial-1.mp4',
-    },
-    {
-      id: 2,
-      name: 'শিক্ষার্থী সাক্ষাৎকার ২',
-      videoUrl: '/videos/testimonial-2.mp4',
-    },
-    {
-      id: 3,
-      name: 'শিক্ষার্থী সাক্ষাৎকার ৩',
-      videoUrl: '/videos/testimonial-3.mp4',
-    },
-  ];
+  const [randomizedTestimonials, setRandomizedTestimonials] = useState<Testimonial[]>([]);
+  const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
+
+  // Randomize testimonials on component mount and when data changes
+  useEffect(() => {
+    const testimonials = testimonialsData.testimonials as Testimonial[];
+    const shuffled = shuffleArray(testimonials);
+    setRandomizedTestimonials(shuffled);
+  }, []);
+
+  // Show only first 3 videos (or all if less than 3)
+  const displayTestimonials = useMemo(() => {
+    return randomizedTestimonials.slice(0, 3);
+  }, [randomizedTestimonials]);
 
   return (
     <section className="py-20 bg-white">
@@ -35,25 +65,88 @@ export default function Testimonials() {
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {testimonials.map((testimonial) => (
-            <div key={testimonial.id} className="bg-gray-50 rounded-2xl overflow-hidden border-2 border-gray-200 hover:border-tinder transition-all transform hover:scale-105 shadow-lg">
-              <div className="aspect-video bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center relative group">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-20 h-20 rounded-full bg-white/90 flex items-center justify-center shadow-xl">
+          {displayTestimonials.map((testimonial) => (
+            <div
+              key={testimonial.id}
+              className="bg-gray-50 rounded-2xl overflow-hidden border-2 border-gray-200 hover:border-tinder transition-all transform hover:scale-105 shadow-lg cursor-pointer"
+              onClick={() => setSelectedVideo(testimonial.videoUrl)}
+            >
+              <div className="aspect-video bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center relative group overflow-hidden">
+                {/* Facebook Video Preview/Thumbnail */}
+                <iframe
+                  src={getFacebookEmbedUrl(testimonial.videoUrl)}
+                  width="100%"
+                  height="100%"
+                  style={{ border: 'none', overflow: 'hidden' }}
+                  scrolling="no"
+                  frameBorder="0"
+                  allowFullScreen={true}
+                  allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                  className="w-full h-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                ></iframe>
+                {/* Play button overlay */}
+                <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/10 transition-colors pointer-events-none">
+                  <div className="w-20 h-20 rounded-full bg-white/95 flex items-center justify-center shadow-2xl transform group-hover:scale-110 transition-transform">
                     <svg className="w-12 h-12 text-tinder ml-1" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M8 5v14l11-7z" />
                     </svg>
                   </div>
                 </div>
-                <p className="text-gray-600 font-medium text-lg">ভিডিও প্লেসহোল্ডার</p>
               </div>
               <div className="p-6">
                 <p className="font-bold text-xl text-gray-900">{testimonial.name}</p>
                 <p className="text-gray-600 mt-2 text-base">শিক্ষার্থীর সাক্ষাৎকার</p>
+                {testimonial.tags && testimonial.tags.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {testimonial.tags.slice(0, 2).map((tag, index) => (
+                      <span
+                        key={index}
+                        className="px-2 py-1 bg-tinder/10 text-tinder text-xs font-medium rounded-full"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           ))}
         </div>
+
+        {/* Video Modal */}
+        {selectedVideo && (
+          <div
+            className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+            onClick={() => setSelectedVideo(null)}
+          >
+            <div
+              className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden relative"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={() => setSelectedVideo(null)}
+                className="absolute top-4 right-4 z-10 w-10 h-10 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center transition-all"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              <div className="aspect-video w-full bg-black">
+                <iframe
+                  src={getFacebookEmbedUrl(selectedVideo)}
+                  width="100%"
+                  height="100%"
+                  style={{ border: 'none', overflow: 'hidden' }}
+                  scrolling="no"
+                  frameBorder="0"
+                  allowFullScreen={true}
+                  allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                  className="w-full h-full"
+                ></iframe>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
