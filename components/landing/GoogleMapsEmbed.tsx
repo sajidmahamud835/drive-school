@@ -32,7 +32,7 @@ export default function GoogleMapsEmbed() {
           
           <div className="mt-6 text-center">
             <a
-              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(config.trainingCenter.address)}`}
+              href={config.trainingCenter.googleMapsPlaceUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-3 px-8 py-4 bg-tinder text-white font-bold text-lg rounded-full hover:bg-red-600 transition-colors shadow-tinder transform hover:scale-105"
