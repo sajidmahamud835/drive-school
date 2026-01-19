@@ -41,17 +41,13 @@ fbq('track', 'AddToCart', {
   content_ids: ['{{package_id}}'],
   content_type: 'product',
   value: {{value}},
-  currency: 'BDT',
-  user_data: {
-    em: ['{{email}}'],
-    ph: ['{{phone}}']
-  }
+  currency: 'BDT'
 });
 </script>
 ```
 **Trigger**: Custom Event `booking_created`
 
-**Note**: `{{email}}` and `{{phone}}` are optional but recommended for Enhanced Conversions. These should be Data Layer Variables.
+**Note**: For Enhanced Conversions with email/phone, use server-side tracking (already implemented). Client-side Meta Pixel doesn't support user_data directly, but server-side API handles it.
 
 ### Purchase (Booking Confirmed)
 ```html
@@ -60,17 +56,13 @@ fbq('track', 'Purchase', {
   content_ids: ['{{package_id}}'],
   content_type: 'product',
   value: {{value}},
-  currency: 'BDT',
-  user_data: {
-    em: ['{{email}}'],
-    ph: ['{{phone}}']
-  }
+  currency: 'BDT'
 });
 </script>
 ```
 **Trigger**: Custom Event `purchase`
 
-**Note**: `{{email}}` and `{{phone}}` are optional but recommended for Enhanced Conversions. These should be Data Layer Variables.
+**Note**: For Enhanced Conversions with email/phone, use server-side tracking (already implemented). Client-side Meta Pixel doesn't support user_data directly, but server-side API handles it.
 
 ---
 
@@ -106,15 +98,13 @@ ttq.track('ViewContent', {
 ttq.track('AddToCart', {
   content_id: '{{package_id}}',
   value: {{value}},
-  currency: 'BDT',
-  email: '{{email}}',
-  phone_number: '{{phone}}'
+  currency: 'BDT'
 });
 </script>
 ```
 **Trigger**: Custom Event `booking_created`
 
-**Note**: `{{email}}` and `{{phone}}` are optional but recommended for Enhanced Conversions. These should be Data Layer Variables.
+**Note**: For Enhanced Conversions with email/phone, use server-side tracking (already implemented). Client-side TikTok Pixel doesn't support email/phone directly, but server-side API handles it.
 
 ### CompletePayment (Booking Confirmed)
 ```html
@@ -123,15 +113,13 @@ ttq.track('CompletePayment', {
   content_id: '{{package_id}}',
   value: {{value}},
   currency: 'BDT',
-  order_id: '{{transaction_id}}',
-  email: '{{email}}',
-  phone_number: '{{phone}}'
+  order_id: '{{transaction_id}}'
 });
 </script>
 ```
 **Trigger**: Custom Event `purchase`
 
-**Note**: `{{email}}` and `{{phone}}` are optional but recommended for Enhanced Conversions. These should be Data Layer Variables.
+**Note**: For Enhanced Conversions with email/phone, use server-side tracking (already implemented). Client-side TikTok Pixel doesn't support email/phone directly, but server-side API handles it.
 
 ---
 
@@ -239,14 +227,16 @@ Create these triggers in GTM:
 
 In GTM, go to **Variables** → **New** → **Data Layer Variable**:
 
-1. `package_id` - Variable Name: `package_id`
+1. `package_id` - Variable Name: `package_id` (Unique package ID)
 2. `package_name` - Variable Name: `package_name`
-3. `value` - Variable Name: `value`
-4. `currency` - Variable Name: `currency`
+3. `value` - Variable Name: `value` (Hidden price for measurement tools)
+4. `currency` - Variable Name: `currency` (usually `BDT`)
 5. `booking_id` - Variable Name: `booking_id`
 6. `transaction_id` - Variable Name: `transaction_id`
-7. `email` - Variable Name: `email` (optional, for Enhanced Conversions)
-8. `phone` - Variable Name: `phone` (optional, for Enhanced Conversions)
+7. `email` - Variable Name: `email` (for Enhanced Conversions - sent in dataLayer)
+8. `phone` - Variable Name: `phone` (for Enhanced Conversions - sent in dataLayer)
+
+**Note**: Email and phone are included in the dataLayer for `booking_created` and `purchase` events. However, Enhanced Conversions with email/phone are primarily handled server-side via `/api/analytics/track` for maximum privacy and reliability.
 
 ---
 
