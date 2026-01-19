@@ -97,21 +97,6 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Validation
-    if (!rating || rating < 1 || rating > 5) {
-      return NextResponse.json(
-        { success: false, error: 'রেটিং ১ থেকে ৫ এর মধ্যে হতে হবে' },
-        { status: 400 }
-      );
-    }
-
-    if (!text || text.trim().length < 10) {
-      return NextResponse.json(
-        { success: false, error: 'রিভিউ কমপক্ষে ১০ অক্ষর হতে হবে' },
-        { status: 400 }
-      );
-    }
-
     // Create review
     const review = await Review.create({
       userFirebaseUid: decodedToken.uid,
